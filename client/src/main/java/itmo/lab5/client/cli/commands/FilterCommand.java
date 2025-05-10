@@ -61,8 +61,6 @@ public class FilterCommand implements Command {
             return RequestSender.getInstance().sendRequest(
                     CommandType.FILTER_LESS_THAN_VIEW, threshold, null);
     
-    
-    
     return RequestSender.getInstance().sendRequest(
                     CommandType.FILTER_GREATER_THAN_VIEW, threshold, null);
   }

@@ -35,16 +35,17 @@ public class App {
                 .register("insert", new InsertCommand())
                 .register("filter_less_than_view", new FilterCommand("less"))
                 .register("filter_greater_than_view", new FilterCommand("greater"))
-                // .register("execute_script", new ExecuteCommand())
-                // .register("update", new UpdateCommand())
-                // .register("print_field_ascending_number_of_rooms", new FieldCommand())
+                .register("execute_script", new ExecuteCommand())
+                .register("print_field_ascending_number_of_rooms", new FieldCommand())
+                .register("update", new UpdateCommand())
                 // .register("replace_if_lower", new ReplaceCommand("lower"))
                 // .register("replace_if_greater", new ReplaceCommand("greater"))
                 .build();
 
         context.set("registry", registry);
         CommandInvoker invoker = new CommandInvoker(registry, context);
-            
+        context.set("commandInvoker", invoker);    
+        
         var scanner = new Scanner(System.in);
         while (true) {
             System.out.print("> ");
