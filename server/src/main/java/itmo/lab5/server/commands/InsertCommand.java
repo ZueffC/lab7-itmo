@@ -11,18 +11,18 @@ import java.util.List;
  */
 public class InsertCommand {
     public static String execute(Flat newFlat, HashMap<Integer, Flat> flats) {
-        int newId = -1; 
-        
+        int newId = -1;
+
         List<Integer> keys = new ArrayList<>(flats.keySet());
         if (!keys.isEmpty()) {
-            newId = keys.get(keys.size() - 1);
+            newId = keys.get(keys.size() - 1) + 1;
         } else {
             newId = 1;
         }
-        
+
         newFlat.setId(newId);
         flats.put(newId, newFlat);
-        
+
         return "Element was successfuly inserted to collection!";
     }
 }

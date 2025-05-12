@@ -11,10 +11,10 @@ import java.util.HashMap;
  */
 public class CommandManager {
     private static final History history = new History();
-    
+
     public static String getAppropriateCommand(DataPacket pack, HashMap<Integer, Flat> collection) {
         history.add(pack.getType().name().toLowerCase());
-        
+
         var result = switch (pack.getType()) {
             case SHOW -> ShowCommand.execute(collection);
             case INFO -> InfoCommand.execute(collection);
@@ -28,7 +28,7 @@ public class CommandManager {
             case UPDATE -> UpdateCommand.execute(pack.getId(), pack.getFlat(), collection);
             default -> "There's no such command!";
         };
-        
+
         return result;
     }
 }

@@ -4,7 +4,6 @@ package itmo.lab5.client.cli.commands;
  *
  * @author oxff
  */
-
 import itmo.lab5.client.cli.CommandContext;
 import itmo.lab5.client.interfaces.Command;
 import itmo.lab5.client.net.RequestSender;
@@ -47,7 +46,6 @@ public class UpdateCommand implements Command {
         if (args.length < 1)
             return "Can't update element without ID!";
 
-        HashMap<Integer, Flat> collection;
         int id;
 
         try {
@@ -56,25 +54,16 @@ public class UpdateCommand implements Command {
             return "You provided wrong id!";
         }
 
-        try {
-            collection = (HashMap<Integer, Flat>) context.get("collection");
-        } catch (ClassCastException e) {
-            return "Collection is corrupted or not found in context.";
-        }
-
-        if (!collection.containsKey(id))
-            return "No element with id " + id;
-
         Flat updatedFlat = null;
-        
+
         if (args.length > 1) {
             updatedFlat = updateByArgs(args, id);
             if (updatedFlat == null)
                 return "Failed to update flat from arguments.";
-            
+
             return RequestSender.getInstance().sendRequest(CommandType.UPDATE, id, updatedFlat);
         }
-        
+
         updatedFlat = updateInteractive(context, id);
         return RequestSender.getInstance().sendRequest(CommandType.UPDATE, id, updatedFlat);
     }
@@ -89,7 +78,7 @@ public class UpdateCommand implements Command {
         // attempt)
         System.out.println("- Coordinates ");
 
-        int x = inputReader.promptNumber("\t Enter x: ", Integer.MIN_VALUE, Integer.MAX_VALUE, Integer::parseInt, null);
+        Long x = inputReader.promptNumber("\t Enter x: ", Long.MIN_VALUE, Long.MAX_VALUE, Long::parseLong, null);
         Double y = inputReader.promptNumber("\t Enter y: ", Double.MIN_VALUE, Double.MAX_VALUE, Double::parseDouble,
                 null);
         var coordinates = new Coordinates(x, y);
@@ -137,7 +126,7 @@ public class UpdateCommand implements Command {
         house = new House(houseName, year, floors);
 
         try {
-            Flat flat = new Flat(
+            return new Flat(
                     id,
                     name,
                     coordinates,
@@ -148,13 +137,6 @@ public class UpdateCommand implements Command {
                     view,
                     transport,
                     house);
-
-            if (flat == null){ 
-                System.out.println("Wrong data provided!");
-                return null;
-            }
-                
-            return flat;            
         } catch (Exception e) {
             System.out.println("There's an error while trying to add new element. Collection is broken.");
             return null;
@@ -172,11 +154,10 @@ public class UpdateCommand implements Command {
         }
 
         try {
-            
             String name = null;
             House house = null;
             Coordinates coordinates = null;
-            Integer x = null;
+            Long x = null;
             Double y = null;
             Double area = null;
             Integer numberOfRooms = null;
@@ -186,42 +167,42 @@ public class UpdateCommand implements Command {
             String houseName = null;
             Integer year = null;
             Long floors = null;
-            
-            if(params.get("name").length() > 0)
+
+            if (params.get("name") != null && params.get("name").length() > 0)
                 name = params.get("name");
-            
-            if(params.containsKey("x"))
-                x = Integer.parseInt(params.get("x"));
-            
-            if(params.containsKey("y"))
+
+            if (params.containsKey("x"))
+                x = Long.parseLong(params.get("x"));
+
+            if (params.containsKey("y"))
                 y = Double.parseDouble(params.get("y"));
-            
+
             coordinates = new Coordinates(x, y);
-            
-            if(params.containsKey("area"))
+
+            if (params.containsKey("area"))
                 area = Double.parseDouble(params.get("area"));
-            
-            if(params.containsKey("numberOfRooms"))
+
+            if (params.containsKey("numberOfRooms"))
                 numberOfRooms = Integer.parseInt(params.get("numberOfRooms"));
 
-            if(params.containsKey("furnish"))
+            if (params.containsKey("furnish"))
                 furnish = Furnish.valueOf(params.get("furnish").toUpperCase());
-            
-            if(params.containsKey("view"))
-               view = View.valueOf(params.get("view").toUpperCase());
-            
-            if(params.containsKey("transport"))
+
+            if (params.containsKey("view"))
+                view = View.valueOf(params.get("view").toUpperCase());
+
+            if (params.containsKey("transport"))
                 transport = Transport.valueOf(params.get("transport").toUpperCase());
-            
+
             if (params.containsKey("name"))
                 houseName = params.get("name");
 
-            if(params.containsKey("year"))
+            if (params.containsKey("year"))
                 year = Integer.parseInt(params.get("year"));
-                
-            if(params.containsKey("floors"))
+
+            if (params.containsKey("floors"))
                 floors = Long.parseLong(params.get("houseFloors"));
-            
+
             house = new House(houseName, year, floors);
             var currentDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 

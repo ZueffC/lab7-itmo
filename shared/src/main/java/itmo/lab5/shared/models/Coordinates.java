@@ -8,15 +8,15 @@ import java.io.Serializable;
 public class Coordinates implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private int x;
+  private Long x;
   private Double y; // Поле не может быть null
 
-  public Coordinates(int x, Double y) {
+  public Coordinates(Long x, Double y) {
     this.x = x;
     this.y = y;
   }
 
-  public void setX(int x) {
+  public void setX(Long x) {
     this.x = x;
   }
 
@@ -24,7 +24,7 @@ public class Coordinates implements Serializable {
     this.y = y;
   }
 
-  public int getX() {
+  public Long getX() {
     return this.x;
   }
 
@@ -33,6 +33,6 @@ public class Coordinates implements Serializable {
   }
 
   public String toString() {
-    return "Point(x = " + Integer.toString(x) + ", y = " + Double.toString(y) + ")";
+    return "Point(x = " + Long.toString(x) + ", y = " + Double.toString(y) + ")";
   }
 }

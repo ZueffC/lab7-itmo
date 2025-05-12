@@ -18,16 +18,15 @@ public class Server {
         int port = 8080;
         System.out.println("Starting TCP server on port " + port);
         HashMap<Integer, Flat> collection = null;
-        
+
         try {
             collection = Reader.parseCSV(new File("data.csv"));
-        } catch(Exception e) {
-            System.out.println("There's a problem while trying to read file: " 
+        } catch (Exception e) {
+            System.out.println("There's a problem while trying to read file: "
                     + e.getMessage());
             return;
         }
-        
-        
+
         try (ServerSocket ss = new ServerSocket(port)) {
             while (true) {
                 Socket socket = ss.accept();
@@ -37,11 +36,12 @@ public class Server {
             e.printStackTrace();
         }
     }
-    
-    public static void requestHandler(Socket socket, HashMap<Integer, Flat> collection) throws IOException, ClassNotFoundException {
+
+    public static void requestHandler(Socket socket, HashMap<Integer, Flat> collection)
+            throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
         ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-        
+
         DataPacket packet = (DataPacket) ois.readObject();
         var result = CommandManager.getAppropriateCommand(packet, collection);
 

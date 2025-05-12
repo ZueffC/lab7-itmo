@@ -19,14 +19,22 @@ import java.util.Set;
  */
 public class ExecuteCommand implements Command {
     private static final Set<String> executingScripts = new HashSet<>();
+    private static final String description = "command allows to execute script contains commands for this REPL";
+
+    @Override
+    public String toString() {
+        return ExecuteCommand.description;
+    }
 
     /**
-     * Executes the script command, running the commands specified in the given 
+     * Executes the script command, running the commands specified in the given
      * script file.
      *
-     * @param args an array of arguments passed to the command, where the first element is expected to be the name of the script file
+     * @param args    an array of arguments passed to the command, where the first
+     *                element is expected to be the name of the script file
      * @param context the command context that contains the command invoker
-     * @return a string containing the output of the executed commands, or an error message if the script file cannot be found or executed
+     * @return a string containing the output of the executed commands, or an error
+     *         message if the script file cannot be found or executed
      */
     @Override
     public String execute(String args[], CommandContext context) {
@@ -62,7 +70,7 @@ public class ExecuteCommand implements Command {
                     output.append("> ").append(line).append("\n").append(result).append("\n");
                 } catch (Exception e) {
                     output.append("Error executing command '").append(line).append("': ")
-                        .append(e.getMessage()).append("\n");
+                            .append(e.getMessage()).append("\n");
                 }
             }
 

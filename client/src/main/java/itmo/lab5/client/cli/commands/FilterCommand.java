@@ -10,13 +10,18 @@ import itmo.lab5.client.net.RequestSender;
 import itmo.lab5.shared.CommandType;
 import java.lang.Math;
 
-
 /**
  *
  * @author oxff
  */
 public class FilterCommand implements Command {
   private String classificator;
+  private final static String description = "provides ability to sort elements by their VIEW component";
+
+  @Override
+  public String toString() {
+    return FilterCommand.description;
+  }
 
   /**
    * Constructs a FilterCommand with the specified classificator.
@@ -31,8 +36,8 @@ public class FilterCommand implements Command {
    * Executes the command, filtering and displaying the flats from the
    * provided collection based on the threshold value.
    *
-   * @param args an array of arguments where the first element is the
-   *             threshold value for filtering.
+   * @param args    an array of arguments where the first element is the
+   *                threshold value for filtering.
    * @param context the context containing the collection of flats to be
    *                processed.
    * @return a message indicating the result of the execution. If no
@@ -45,23 +50,23 @@ public class FilterCommand implements Command {
   public String execute(String args[], CommandContext context) {
     if (args.length < 1)
       return "There's no classificator provided!";
-    
+
     Integer threshold = null;
-    
+
     try {
-        threshold =  Math.abs(Integer.parseInt(args[0]));
-    } catch(NumberFormatException e) {
-        return "Provided wrong type of threshold!";
-    } 
-    
-    if(null == threshold)
-        return "Provided wrong type of threshold!";
-  
-    if("less".equals(this.classificator))
-            return RequestSender.getInstance().sendRequest(
-                    CommandType.FILTER_LESS_THAN_VIEW, threshold, null);
-    
+      threshold = Math.abs(Integer.parseInt(args[0]));
+    } catch (NumberFormatException e) {
+      return "Provided wrong type of threshold!";
+    }
+
+    if (null == threshold)
+      return "Provided wrong type of threshold!";
+
+    if ("less".equals(this.classificator))
+      return RequestSender.getInstance().sendRequest(
+          CommandType.FILTER_LESS_THAN_VIEW, threshold, null);
+
     return RequestSender.getInstance().sendRequest(
-                    CommandType.FILTER_GREATER_THAN_VIEW, threshold, null);
+        CommandType.FILTER_GREATER_THAN_VIEW, threshold, null);
   }
 }

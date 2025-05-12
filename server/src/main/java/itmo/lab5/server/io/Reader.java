@@ -55,7 +55,7 @@ public class Reader {
 
     flat.setId(Integer.parseInt(values[0]));
     flat.setName(values[1]);
-    flat.setCoordinates(new Coordinates(Integer.parseInt(values[2]), Double.valueOf(values[3])));
+    flat.setCoordinates(new Coordinates(Long.parseLong(values[2]), Double.valueOf(values[3])));
     flat.setCreationDate(LocalDate.parse(values[4], formatter));
     flat.setArea(Double.valueOf(values[5]));
     flat.setNumberOfRooms(Integer.parseInt(values[6]));

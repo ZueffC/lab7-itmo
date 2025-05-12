@@ -10,17 +10,19 @@ import java.time.format.DateTimeFormatter;
  */
 public class Flat implements Comparable<Flat>, Serializable {
   private Integer id; // Значение поля должно быть больше 0, Значение этого поля должно быть
-                  // уникальным, Значение этого поля должно генерироваться автоматически
+  // уникальным, Значение этого поля должно генерироваться автоматически
   private String name; // Поле не может быть null, Строка не может быть пустой
   private Coordinates coordinates; // Поле не может быть null
-  private String creationDateString; // Поле не может быть null, Значение этого поля должно генерироваться автоматически
+  private String creationDateString; // Поле не может быть null, Значение этого поля должно генерироваться
+                                     // автоматически
   private Double area; // Максимальное значение поля: 626, Значение поля должно быть больше 0
-  private int numberOfRooms; // Значение поля должно быть больше 0
+  private Integer numberOfRooms; // Значение поля должно быть больше 0
   private Furnish furnish; // Поле не может быть null
   private View view; // Поле может быть null
   private Transport transport; // Поле не может быть null
   private House house; // Поле может быть null
   private static final long serialVersionUID = 1L;
+
   /**
    * Constructs a Flat object with the specified attributes.
    *
@@ -41,7 +43,7 @@ public class Flat implements Comparable<Flat>, Serializable {
    *                      null).
    */
   public Flat(int id, String name, Coordinates coordinates, LocalDate creationDate, Double area,
-      int numberOfRooms, Furnish furnish, View view, Transport transport, House house) {
+      Integer numberOfRooms, Furnish furnish, View view, Transport transport, House house) {
     this.id = id;
     this.name = name;
     this.coordinates = coordinates;
@@ -158,7 +160,7 @@ public class Flat implements Comparable<Flat>, Serializable {
    *
    * @return the number of rooms in the flat (must be greater than 0).
    */
-  public int getNumberOfRooms() {
+  public Integer getNumberOfRooms() {
     return numberOfRooms;
   }
 
@@ -168,7 +170,7 @@ public class Flat implements Comparable<Flat>, Serializable {
    * @param numberOfRooms the new number of rooms in the flat (must be greater
    *                      than 0).
    */
-  public void setNumberOfRooms(int numberOfRooms) {
+  public void setNumberOfRooms(Integer numberOfRooms) {
     this.numberOfRooms = numberOfRooms;
   }
 
