@@ -177,14 +177,12 @@ public class InsertCommand implements Command {
             System.out.print("\t Enter house name: ");
             houseName = scanner.nextLine().trim();
         }
-
+        
         int year = params.containsKey("houseYear") ? Integer.parseInt(params.get("houseYear"))
                     : inputReader.promptNumber("\t Enter house age: ", 1, 959, Integer::parseInt, null);
-        long floors = params.containsKey("houseFloors") ? Long.parseLong(params.get("houseFloors"))
+            long floors = params.containsKey("houseFloors") ? Long.parseLong(params.get("houseFloors"))
                     : inputReader.promptNumber("\t Enter house floors count: ", 1L, 77L, Long::parseLong, null);
-        
         var house = new House(houseName, year, floors);
-       
 
         Flat flat = new Flat(
                 -1,

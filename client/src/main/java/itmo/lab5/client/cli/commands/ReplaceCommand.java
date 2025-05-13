@@ -1,34 +1,31 @@
 package itmo.lab5.client.cli.commands;
 
+import itmo.lab5.client.cli.CommandContext;
+import itmo.lab5.client.interfaces.Command;
+import itmo.lab5.client.net.RequestSender;
+import itmo.lab5.shared.*;
+import itmo.lab5.shared.models.*;
+import itmo.lab5.shared.models.enums.*;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Scanner;
+
 /**
  *
  * @author oxff
  */
-import itmo.lab5.client.cli.CommandContext;
-import itmo.lab5.client.interfaces.Command;
-import itmo.lab5.client.net.RequestSender;
-import itmo.lab5.shared.CommandType;
-import itmo.lab5.shared.DataPacket;
-import itmo.lab5.shared.models.*;
-import itmo.lab5.shared.models.enums.*;
-import java.time.ZoneId;
-import java.util.*;
-
-/**
- * This class implements the Command interface and provides
- * functionality to update an existing Flat object in the collection based on
- * its ID.
- *
- * When executed, this command retrieves the flat with the specified ID from
- * the collection, prompts the user for new values to update the flat's
- * properties, and then saves the updated flat back to the collection.
- *
- */
-public class UpdateCommand implements Command {
+public class ReplaceCommand implements Command {
     private final Scanner scanner = new Scanner(System.in);
     private final ReaderUtil inputReader = new ReaderUtil(scanner);
     private static final String description = "command allows to update collection's element by provided id in k=v manner";
-
+    private static CommandType command_type;
+    
+    public ReplaceCommand(String classificator) {
+        if("less".equals(classificator)) this.command_type = CommandType.REPLACE_IF_LOWER;
+        else this.command_type = CommandType.REPLACE_IF_GREATER;
+    }
+    
     public final String toString() {
         return this.description;
     }
@@ -62,12 +59,13 @@ public class UpdateCommand implements Command {
             if (updatedFlat == null)
                 return "Failed to update flat from arguments.";
 
-            return RequestSender.getInstance().sendRequest(new DataPacket(CommandType.UPDATE, id, updatedFlat));
+            return RequestSender.getInstance().sendRequest(
+                    new DataPacket(this.command_type, id, updatedFlat));
         }
 
         updatedFlat = updateInteractive(context, id);
         return RequestSender.getInstance().sendRequest(
-                new DataPacket(CommandType.UPDATE, id, updatedFlat));
+                new DataPacket(this.command_type, id, updatedFlat));
     }
 
     private Flat updateInteractive(CommandContext context, int id) {
@@ -147,7 +145,7 @@ public class UpdateCommand implements Command {
 
     private Flat updateByArgs(String[] args, int id) {
         HashMap<String, String> params = new HashMap<>();
-
+ 
         for (String arg : args) {
             String[] parts = arg.split("=", 2);
 

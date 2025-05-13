@@ -1,7 +1,6 @@
 package itmo.lab5.server.commands;
 
 import itmo.lab5.shared.models.Flat;
-import itmo.lab5.shared.models.House;
 import java.util.HashMap;
 
 /**

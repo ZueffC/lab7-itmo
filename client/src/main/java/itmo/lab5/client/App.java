@@ -16,9 +16,6 @@ import itmo.lab5.client.net.RequestSender;
  * over the TCP
  */
 public class App {
-    private static final Logger LOGGER = Logger
-            .getLogger(FileHandler.class.getName());
-
     /**
      * The main method that serves as the entry point for the application.
      * 
@@ -31,18 +28,19 @@ public class App {
                 .register("show", new ShowCommand())
                 .register("help", new HelpCommand())
                 .register("exit", new ExitCommand())
+                //.register("save", new SaveCommand())
                 .register("info", new InfoCommand())
                 .register("clear", new ClearCommand())
+                .register("insert", new InsertCommand())
+                .register("update", new UpdateCommand())
                 .register("history", new HistoryCommand())
                 .register("remove_key", new RemoveKeyCommand())
-                .register("insert", new InsertCommand())
-                .register("filter_less_than_view", new FilterCommand("less"))
-                .register("filter_greater_than_view", new FilterCommand("greater"))
                 .register("execute_script", new ExecuteCommand())
+                .register("replace_if_lower", new ReplaceCommand("lower"))
+                .register("filter_less_than_view", new FilterCommand("less"))
+                .register("replace_if_greater", new ReplaceCommand("greater"))
+                .register("filter_greater_than_view", new FilterCommand("greater"))
                 .register("print_field_ascending_number_of_rooms", new FieldCommand())
-                .register("update", new UpdateCommand())
-                // .register("replace_if_lower", new ReplaceCommand("lower"))
-                // .register("replace_if_greater", new ReplaceCommand("greater"))
                 .build();
 
         context.set("registry", registry);
