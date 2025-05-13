@@ -20,10 +20,13 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Server {
     private static final int PORT = 8080;
     private static final int BUFFER_SIZE = 65536;
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     private static void checkWritePermissions(Path path) throws IOException {
         if (Files.exists(path)) {
@@ -88,14 +91,14 @@ public class Server {
             try {
                 collection = Reader.parseCSV(dataFilePath.toFile());
             } catch (Exception e) {
-                System.out.println("Can't parse collection from file!");
+                logger.error("Can't parse collection from file!", e);
             }
             
             serverChannel.bind(new InetSocketAddress(PORT));
             serverChannel.configureBlocking(false);
             serverChannel.register(selector, SelectionKey.OP_ACCEPT);
 
-            System.out.println("Server started on port " + PORT);
+            logger.info("Server started on port " + PORT);
 
             while (true) {
                 selector.select();
@@ -112,7 +115,7 @@ public class Server {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Exception: ", e);
         }
     }
 
@@ -121,7 +124,7 @@ public class Server {
         SocketChannel clientChannel = serverChannel.accept();
         clientChannel.configureBlocking(false);
         clientChannel.register(selector, SelectionKey.OP_READ);
-        System.out.println("Accepted connection from " + clientChannel.getRemoteAddress());
+        logger.debug("Accepted connection from " + clientChannel.getRemoteAddress());
     }
 
     private static void handleRead(SelectionKey key, HashMap<Integer, Flat> collection, Path dataFilePath) throws IOException {
@@ -131,7 +134,7 @@ public class Server {
 
         if (bytesRead == -1) {
             clientChannel.close();
-            System.out.println("Client disconnected");
+            logger.debug("Client disconnected");
             return;
         }
 
@@ -145,6 +148,7 @@ public class Server {
                 DataPacket packet = (DataPacket) obj;
                 
                 String response = CommandManager.getAppropriateCommand(packet, collection, dataFilePath);
+                logger.debug("Recieved command: " + packet.getType());
                 sendResponse(clientChannel, response);
             }
         } catch (ClassNotFoundException e) {
@@ -157,5 +161,7 @@ public class Server {
         while (buffer.hasRemaining()) {
             clientChannel.write(buffer);
         }
+        
+        logger.debug("Sending response...");
     }
 }
