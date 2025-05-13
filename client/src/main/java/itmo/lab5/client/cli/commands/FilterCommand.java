@@ -9,8 +9,11 @@ import itmo.lab5.client.interfaces.Command;
 import itmo.lab5.client.net.RequestSender;
 import itmo.lab5.shared.CommandType;
 import itmo.lab5.shared.DataPacket;
+import itmo.lab5.shared.models.Flat;
+import itmo.lab5.shared.models.enums.View;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
-import java.lang.Math;
 
 /**
  *
@@ -50,25 +53,35 @@ public class FilterCommand implements Command {
    */
   @Override
   public String execute(String args[], CommandContext context) {
-    if (args.length < 1)
-      return "There's no classificator provided!";
-
+    if (args.length < 1) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("There's no classificator provided! \n");
+        
+        String constants = Arrays.stream(View.values())
+                .map(Enum::name)
+                .collect(Collectors.joining(", "));
+     
+        return "All available options: " + constants;
+    }
+      
     Integer threshold = null;
-
+    var flat = new Flat();
+    
     try {
       threshold = Math.abs(Integer.parseInt(args[0]));
+      flat.setView(View.fromValue(threshold));
     } catch (NumberFormatException e) {
-      return "Provided wrong type of threshold!";
+      flat.setView(View.valueOf(args[0].toUpperCase()));
     }
 
-    if (null == threshold)
+    if (threshold == null && flat.getView() == null)
       return "Provided wrong type of threshold!";
 
     if ("less".equals(this.classificator))
       return RequestSender.getInstance().sendRequest(
-          new DataPacket(CommandType.FILTER_LESS_THAN_VIEW, threshold, null));
+          new DataPacket(CommandType.FILTER_LESS_THAN_VIEW, threshold, flat));
 
     return RequestSender.getInstance().sendRequest(
-        new DataPacket(CommandType.FILTER_GREATER_THAN_VIEW, threshold, null));
+        new DataPacket(CommandType.FILTER_GREATER_THAN_VIEW, threshold, flat));
   }
 }

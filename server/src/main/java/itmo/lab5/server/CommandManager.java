@@ -24,8 +24,8 @@ public class CommandManager {
             case HISTORY -> history.toString();
             case REMOVE_KEY -> RemoveKeyCommand.execute(pack.getId(), collection);
             case INSERT -> InsertCommand.execute(pack.getFlat(), collection);
-            case FILTER_LESS_THAN_VIEW -> FilterCommand.execute("less", pack.getId(), collection);
-            case FILTER_GREATER_THAN_VIEW -> FilterCommand.execute("greater", pack.getId(), collection);
+            case FILTER_LESS_THAN_VIEW -> FilterCommand.execute("less", collection, pack.getFlat());
+            case FILTER_GREATER_THAN_VIEW -> FilterCommand.execute("greater", collection, pack.getFlat());
             case PRINT_FIELD_ASCENDING_NUMBER_OF_ROOMS -> FieldCommand.execute(collection);
             case UPDATE -> UpdateCommand.execute(pack.getId(), pack.getFlat(), collection);
             case REPLACE_IF_LOWER -> ReplaceCommand.execute(-1 * pack.getId(), pack.getFlat(), collection);
