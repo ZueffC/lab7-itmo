@@ -1,6 +1,9 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     java
     application
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 application {
@@ -16,5 +19,23 @@ dependencies {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+tasks {
+    jar {
+        archiveFileName.set("server.jar")
+        manifest {
+            attributes(mapOf("Main-Class" to "com.example.Main"))
+        }
+    }
+
+    register<ShadowJar>("NewShadowJar") {
+        archiveFileName.set("server-all.jar")
+        destinationDirectory.set(jar.get().destinationDirectory)
+
+        from(sourceSets.main.get().output)
+        configurations = listOf(project.configurations.getByName("runtimeOnly"))
+        mergeServiceFiles()
     }
 }
