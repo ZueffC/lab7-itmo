@@ -3,9 +3,6 @@ package itmo.lab5.client;
 import itmo.lab5.client.cli.commands.ExitCommand;
 import java.util.Arrays;
 import java.util.Scanner;
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-
 import itmo.lab5.client.cli.*;
 import itmo.lab5.client.cli.commands.*;
 import itmo.lab5.client.net.RequestSender;
@@ -28,7 +25,7 @@ public class App {
                 .register("show", new ShowCommand())
                 .register("help", new HelpCommand())
                 .register("exit", new ExitCommand())
-                //.register("save", new SaveCommand())
+                // .register("save", new SaveCommand())
                 .register("info", new InfoCommand())
                 .register("clear", new ClearCommand())
                 .register("insert", new InsertCommand())

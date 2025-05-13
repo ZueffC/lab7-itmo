@@ -2,10 +2,8 @@ package itmo.lab5.server;
 
 import itmo.lab5.server.io.Reader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -25,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 public class Server {
     private static final int PORT = 8080;
-    private static final int BUFFER_SIZE = 65536;
+    private static final int BUFFER_SIZE = 1024*1024;
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     private static void checkWritePermissions(Path path) throws IOException {
