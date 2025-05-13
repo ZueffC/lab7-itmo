@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package itmo.lab5.client.cli.commands;
 
 import itmo.lab5.client.cli.CommandContext;
@@ -9,6 +5,9 @@ import itmo.lab5.client.cli.CommandInvoker;
 import itmo.lab5.client.interfaces.Command;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
@@ -44,10 +43,21 @@ public class ExecuteCommand implements Command {
 
         String fileName = args[0];
         File scriptFile = new File(fileName);
+        Path path = Paths.get(fileName.toString());
+        
+        if (!Files.exists(path))
+            throw new IllegalArgumentException("The file at path '" + path + "' does not exist.");
 
-        if (executingScripts.contains(scriptFile.getAbsolutePath())) {
+        if (!Files.isRegularFile(path))
+            throw new IllegalArgumentException("The path '" + path + "' is not a file. Check twice!");
+
+        if (!Files.isReadable(path))
+            throw new IllegalArgumentException("The file at path '" + path + "' is not readable. " +
+                    "Check file permissions!");
+
+        
+        if (executingScripts.contains(scriptFile.getAbsolutePath()))
             return "Error: Recursive script execution detected for file: " + fileName;
-        }
 
         executingScripts.add(scriptFile.getAbsolutePath());
 

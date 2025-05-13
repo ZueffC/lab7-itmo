@@ -60,9 +60,9 @@ public class Server {
         } catch (InvalidPathException ex) {
             throw new IllegalArgumentException(
                     "The path provided in environment variable '" +
-                            envVariable + "' is invalid: " + ex.getMessage(),
+                           envVariable + "' is invalid: " + ex.getMessage(),
                     ex);
-        }
+        }                   
 
         if (!Files.exists(path))
             throw new IllegalArgumentException("The file at path '" + path + "' does not exist.");

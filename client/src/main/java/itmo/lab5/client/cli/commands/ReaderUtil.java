@@ -136,7 +136,8 @@ public class ReaderUtil {
    */
   public <T extends Comparable<T>> T promptNumber(String message, T min, T max, Parser<T> parser, T oldValue) {
     while (true) {
-      System.out.print(message + " (previosly: " + oldValue + ", might be from " + min + " and up to: " + max + "): ");
+      
+      System.out.print(message + "(might be from " + min + " and up to: " + max + "): ");
       String input = scanner.nextLine().trim();
 
       if (input.isEmpty())
