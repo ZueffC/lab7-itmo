@@ -1,70 +1,70 @@
 package itmo.lab5.client.net;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-
-import itmo.lab5.shared.CommandType;
 import itmo.lab5.shared.DataPacket;
-import itmo.lab5.shared.models.Flat;
 
-import java.net.*;
-import java.util.concurrent.TimeUnit;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 public class RequestSender {
-    private static RequestSender instance;
-    private final String host;
-    private final int port;
-    private static final int MAX_RETRIES = 5; // Максимальное число попыток
-    private static final long RETRY_DELAY_MS = 2000; // Задержка между попытками в миллисекундах
 
-    private RequestSender(String host, int port) {
-        this.host = host;
-        this.port = port;
-    }
+    private static volatile RequestSender instance;
+    private static String host;
+    private static int port;
 
-    public static synchronized RequestSender init(String host, int port) {
-        if (instance != null)
-            throw new IllegalStateException("RequestSender already initialized");
-        instance = new RequestSender(host, port);
-        return instance;
-    }
+    private RequestSender() {}
 
-    public static synchronized RequestSender getInstance() {
-        if (instance == null)
-            throw new IllegalStateException("RequestSender not initialized. Call init() first.");
-        return instance;
-    }
-
-    public String sendRequest(CommandType type, Integer id, Flat flat) {
-        int attempt = 0;
-
-        while (attempt < MAX_RETRIES) {
-            try (Socket socket = new Socket()) {
-                socket.connect(new InetSocketAddress(host, port), 5000); // timeout на подключение
-                ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-
-                DataPacket packet = new DataPacket(type, id, flat);
-                oos.writeObject(packet);
-
-                String response = ois.readUTF();
-                return response;
-
-            } catch (IOException e) {
-                attempt++;
-                System.err.println("Connection failed (attempt " + attempt + "/" + MAX_RETRIES + "). Retrying in "
-                        + (RETRY_DELAY_MS / 1000) + " seconds...");
-                try {
-                    TimeUnit.MILLISECONDS.sleep(RETRY_DELAY_MS);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    return "Connection interrupted.";
+    public static RequestSender getInstance() {
+        RequestSender instance = RequestSender.instance;
+        if (instance == null) {
+            synchronized (RequestSender.class) {
+                instance = RequestSender.instance;
+                if (instance == null) {
+                    RequestSender.instance = instance = new RequestSender();
                 }
             }
         }
+        
+        return instance;
+    }
 
-        return "Server is unreachable after " + MAX_RETRIES + " attempts. Please try again later.";
+    public static void init(String host, int port) {
+        RequestSender.host = host;
+        RequestSender.port = port;
+    }
+
+    public String sendRequest(DataPacket packet) {
+        if (host == null || port == 0) {
+            throw new IllegalStateException("RequestHandler is not initialized. Call init() first.");
+        }
+
+        try (SocketChannel clientChannel = SocketChannel.open(new InetSocketAddress(host, port))) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+                oos.writeObject(packet);
+            }
+
+            byte[] data = baos.toByteArray();
+            ByteBuffer writeBuffer = ByteBuffer.wrap(data);
+            clientChannel.write(writeBuffer);
+            
+            ByteBuffer readBuffer = ByteBuffer.allocate(65536);
+            int bytesRead = clientChannel.read(readBuffer);
+
+            if (bytesRead > 0) {
+                readBuffer.flip();
+                byte[] responseBytes = new byte[readBuffer.remaining()];
+                readBuffer.get(responseBytes);
+                return new String(responseBytes);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "No response from server";
     }
 }

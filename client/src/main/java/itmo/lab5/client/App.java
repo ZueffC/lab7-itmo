@@ -12,17 +12,20 @@ import itmo.lab5.client.net.RequestSender;
 
 /**
  * This class is an entry point of the application.
- * The main method creates REPL that provide ability create or modificate data over the TCP
+ * The main method creates REPL that provide ability create or modificate data
+ * over the TCP
  */
 public class App {
-    private static final Logger LOGGER = Logger.getLogger(FileHandler.class.getName());
-    private static final RequestSender sender = RequestSender.init("localhost", 8080);
+    private static final Logger LOGGER = Logger
+            .getLogger(FileHandler.class.getName());
 
     /**
      * The main method that serves as the entry point for the application.
+     * 
      * @param g_args command-line arguments (not used)
      */
     public static void main(String[] g_args) {
+        RequestSender.init("localhost", 8080);
         CommandContext context = new CommandContext();
         CommandRegistry registry = new CommandBuilder()
                 .register("show", new ShowCommand())
@@ -44,8 +47,8 @@ public class App {
 
         context.set("registry", registry);
         CommandInvoker invoker = new CommandInvoker(registry, context);
-        context.set("commandInvoker", invoker);    
-        
+        context.set("commandInvoker", invoker);
+
         var scanner = new Scanner(System.in);
         while (true) {
             System.out.print("> ");

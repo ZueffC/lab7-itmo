@@ -8,6 +8,8 @@ import itmo.lab5.client.cli.CommandContext;
 import itmo.lab5.client.interfaces.Command;
 import itmo.lab5.client.net.RequestSender;
 import itmo.lab5.shared.CommandType;
+import itmo.lab5.shared.DataPacket;
+
 import java.lang.Math;
 
 /**
@@ -64,9 +66,9 @@ public class FilterCommand implements Command {
 
     if ("less".equals(this.classificator))
       return RequestSender.getInstance().sendRequest(
-          CommandType.FILTER_LESS_THAN_VIEW, threshold, null);
+          new DataPacket(CommandType.FILTER_LESS_THAN_VIEW, threshold, null));
 
     return RequestSender.getInstance().sendRequest(
-        CommandType.FILTER_GREATER_THAN_VIEW, threshold, null);
+        new DataPacket(CommandType.FILTER_GREATER_THAN_VIEW, threshold, null));
   }
 }

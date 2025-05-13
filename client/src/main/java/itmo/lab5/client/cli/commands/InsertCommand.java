@@ -4,6 +4,7 @@ import itmo.lab5.client.cli.CommandContext;
 import itmo.lab5.client.interfaces.Command;
 import itmo.lab5.client.net.RequestSender;
 import itmo.lab5.shared.CommandType;
+import itmo.lab5.shared.DataPacket;
 import itmo.lab5.shared.models.*;
 import itmo.lab5.shared.models.enums.*;
 import java.time.LocalDate;
@@ -55,34 +56,27 @@ public class InsertCommand implements Command {
 
         System.out.println("- Coordinates ");
         Long x = inputReader.promptNumber("\t Enter x: ", Long.MIN_VALUE, Long.MAX_VALUE, Long::parseLong, null);
-        Double y = inputReader.promptNumber("\t Enter y: ", Double.MIN_VALUE, Double.MAX_VALUE, Double::parseDouble,
-                null);
+        Double y = inputReader.promptNumber("\t Enter y: ", Double.MIN_VALUE, Double.MAX_VALUE, Double::parseDouble, null);
         var coordinates = new Coordinates(x, y);
-
+        
         Double area = inputReader.promptNumber("\t Enter square: ", 0.0, 626.0, Double::parseDouble, null);
         int numberOfRooms = inputReader.promptNumber("\t Enter rooms count: ", 1, Integer.MAX_VALUE, Integer::parseInt,
                 null);
 
         System.out.println("- Furnish");
-        Furnish furnish = inputReader.promptEnum("\t Enter furnish type: ", Furnish.class, null);
+        Furnish furnish = inputReader.promptEnum("\t Enter furnish type ", Furnish.class, null);
 
         System.out.println("- View");
-        View view = inputReader.promptEnumNullable("\t Enter view type: ", View.class, null);
+        View view = inputReader.promptEnumNullable("\t Enter view type ", View.class, null);
 
         System.out.println("- Transport");
-        Transport transport = inputReader.promptEnum("\t Enter transport type: ", Transport.class, null);
+        Transport transport = inputReader.promptEnum("\t Enter transport type ", Transport.class, null);
 
-        System.out.println("- House");
-        System.out.print("\t Enter house name: ");
-        String houseName = scanner.nextLine().trim();
-
-        House house = null;
-
-        if (!houseName.isEmpty()) {
-            int year = inputReader.promptNumber("\t Enter house age: ", 1, 959, Integer::parseInt, null);
-            long floors = inputReader.promptNumber("\t Enter house floors count: ", 1L, 77L, Long::parseLong, null);
-            house = new House(houseName, year, floors);
-        }
+        System.out.println("- House");        
+        String houseName = inputReader.promptString("\t Enter house name: ", false, null);
+        int year = inputReader.promptNumber("\t Enter house age: ", 1, 959, Integer::parseInt, null);
+        long floors = inputReader.promptNumber("\t Enter house floors count: ", 1L, 77L, Long::parseLong, null);
+        var house = new House(houseName, year, floors);
 
         Flat flat = new Flat(
                 -1,
@@ -96,7 +90,7 @@ public class InsertCommand implements Command {
                 transport,
                 house);
 
-        return RequestSender.getInstance().sendRequest(CommandType.INSERT, -1, flat);
+        return RequestSender.getInstance().sendRequest(new DataPacket(CommandType.INSERT, -1, flat));
     }
 
     /**
@@ -184,15 +178,13 @@ public class InsertCommand implements Command {
             houseName = scanner.nextLine().trim();
         }
 
-        House house = null;
-
-        if (!houseName.isEmpty()) {
-            int year = params.containsKey("houseYear") ? Integer.parseInt(params.get("houseYear"))
+        int year = params.containsKey("houseYear") ? Integer.parseInt(params.get("houseYear"))
                     : inputReader.promptNumber("\t Enter house age: ", 1, 959, Integer::parseInt, null);
-            long floors = params.containsKey("houseFloors") ? Long.parseLong(params.get("houseFloors"))
+        long floors = params.containsKey("houseFloors") ? Long.parseLong(params.get("houseFloors"))
                     : inputReader.promptNumber("\t Enter house floors count: ", 1L, 77L, Long::parseLong, null);
-            house = new House(houseName, year, floors);
-        }
+        
+        var house = new House(houseName, year, floors);
+       
 
         Flat flat = new Flat(
                 -1,
@@ -206,7 +198,7 @@ public class InsertCommand implements Command {
                 transport,
                 house);
 
-        return RequestSender.getInstance().sendRequest(CommandType.INSERT, -1, flat);
+        return RequestSender.getInstance().sendRequest(new DataPacket(CommandType.INSERT, -1, flat));
     }
 
     public static <E extends Enum<E>> boolean isValidEnumValue(Class<E> enumClass, String value) {

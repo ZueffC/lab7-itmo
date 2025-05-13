@@ -4,6 +4,7 @@ import itmo.lab5.client.cli.CommandContext;
 import itmo.lab5.client.interfaces.Command;
 import itmo.lab5.client.net.RequestSender;
 import itmo.lab5.shared.CommandType;
+import itmo.lab5.shared.DataPacket;
 
 /**
  *
@@ -34,6 +35,6 @@ public class FieldCommand implements Command {
   @Override
   public String execute(String args[], CommandContext context) {
     return RequestSender.getInstance().sendRequest(
-        CommandType.PRINT_FIELD_ASCENDING_NUMBER_OF_ROOMS, null, null);
+        new DataPacket(CommandType.PRINT_FIELD_ASCENDING_NUMBER_OF_ROOMS, null, null));
   }
 }

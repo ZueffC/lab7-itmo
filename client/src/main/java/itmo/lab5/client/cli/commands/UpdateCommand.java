@@ -8,6 +8,7 @@ import itmo.lab5.client.cli.CommandContext;
 import itmo.lab5.client.interfaces.Command;
 import itmo.lab5.client.net.RequestSender;
 import itmo.lab5.shared.CommandType;
+import itmo.lab5.shared.DataPacket;
 import itmo.lab5.shared.models.*;
 import itmo.lab5.shared.models.enums.*;
 import java.time.ZoneId;
@@ -61,11 +62,12 @@ public class UpdateCommand implements Command {
             if (updatedFlat == null)
                 return "Failed to update flat from arguments.";
 
-            return RequestSender.getInstance().sendRequest(CommandType.UPDATE, id, updatedFlat);
+            return RequestSender.getInstance().sendRequest(new DataPacket(CommandType.UPDATE, id, updatedFlat));
         }
 
         updatedFlat = updateInteractive(context, id);
-        return RequestSender.getInstance().sendRequest(CommandType.UPDATE, id, updatedFlat);
+        return RequestSender.getInstance().sendRequest(
+                new DataPacket(CommandType.UPDATE, id, updatedFlat));
     }
 
     private Flat updateInteractive(CommandContext context, int id) {

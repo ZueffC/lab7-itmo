@@ -1,6 +1,7 @@
 package itmo.lab5.server.commands;
 
 import itmo.lab5.shared.models.Flat;
+import itmo.lab5.shared.models.House;
 import java.util.HashMap;
 
 /**
@@ -15,9 +16,14 @@ public class UpdateCommand {
 
         if (newFlat.getName() != null && newFlat.getName().length() > 0)
             oldFlat.setName(newFlat.getName());
-
-        if (newFlat.getCoordinates() != null && newFlat.getCoordinates().getX() != null)
-            oldFlat.setCoordinates(newFlat.getCoordinates());
+        
+        if (newFlat.getCoordinates() != null) {
+            if(newFlat.getCoordinates().getX() != null)
+                oldFlat.getCoordinates().setX(newFlat.getCoordinates().getX());
+            
+            if(newFlat.getCoordinates().getY() != null)
+                oldFlat.getCoordinates().setY((newFlat.getCoordinates().getY()));    
+        }
 
         if (newFlat.getArea() != null && newFlat.getArea() > 0 && newFlat.getArea() <= 626)
             oldFlat.setArea(newFlat.getArea());
