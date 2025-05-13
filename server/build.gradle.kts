@@ -26,11 +26,11 @@ tasks {
     jar {
         archiveFileName.set("server.jar")
         manifest {
-            attributes(mapOf("Main-Class" to "com.example.Main"))
+            attributes(mapOf("Main-Class" to "itmo.lab5.server.Server"))
         }
     }
 
-    register<ShadowJar>("NewShadowJar") {
+    register<ShadowJar>("ShadowJarServer") {
         archiveFileName.set("server-all.jar")
         destinationDirectory.set(jar.get().destinationDirectory)
 
