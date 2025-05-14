@@ -19,7 +19,7 @@ public class App {
      * @param g_args command-line arguments (not used)
      */
     public static void main(String[] g_args) {
-        RequestSender.init("localhost", 8080);
+        RequestSender.init("localhost", 7070);
         CommandContext context = new CommandContext();
         CommandRegistry registry = new CommandBuilder()
                 .register("show", new ShowCommand())
