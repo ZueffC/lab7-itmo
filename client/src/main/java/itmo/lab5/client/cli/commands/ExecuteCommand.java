@@ -44,18 +44,7 @@ public class ExecuteCommand implements Command {
         String fileName = args[0];
         File scriptFile = new File(fileName);
         Path path = Paths.get(fileName.toString());
-        
-        if (!Files.exists(path))
-            throw new IllegalArgumentException("The file at path '" + path + "' does not exist.");
 
-        if (!Files.isRegularFile(path))
-            throw new IllegalArgumentException("The path '" + path + "' is not a file. Check twice!");
-
-        if (!Files.isReadable(path))
-            throw new IllegalArgumentException("The file at path '" + path + "' is not readable. " +
-                    "Check file permissions!");
-
-        
         if (executingScripts.contains(scriptFile.getAbsolutePath()))
             return "Error: Recursive script execution detected for file: " + fileName;
 
