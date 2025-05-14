@@ -1,7 +1,7 @@
 package itmo.lab5.client;
 
-import itmo.lab5.client.cli.commands.ExitCommand;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import itmo.lab5.client.cli.*;
 import itmo.lab5.client.cli.commands.*;
@@ -46,17 +46,23 @@ public class App {
 
         var scanner = new Scanner(System.in);
         while (true) {
-            System.out.print("> ");
-            String input = scanner.nextLine().trim();
-            if (input.isEmpty())
-                continue;
+            try {
+                System.out.print("> ");
+                String input = scanner.nextLine().trim();
+                if (input.isEmpty())
+                    continue;
 
-            String[] args = input.split(" ");
-            String commandName = args[0];
-            String[] commandArgs = args.length > 1 ? Arrays.copyOfRange(args, 1, args.length) : new String[0];
+                String[] args = input.split(" ");
+                String commandName = args[0];
+                String[] commandArgs = args.length > 1 ? Arrays.copyOfRange(args, 1, args.length) : new String[0];
 
-            String response = invoker.executeCommand(commandName, commandArgs);
-            System.out.println(response);
+                String response = invoker.executeCommand(commandName, commandArgs);
+                System.out.println(response);
+            } catch (NoSuchElementException e) {
+                System.out.println("\nExiting...");
+                break;
+            }
         }
+        scanner.close();
     }
 }
