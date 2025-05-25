@@ -1,6 +1,5 @@
 package itmo.lab5.server;
 
-import itmo.lab5.server.io.Reader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -10,156 +9,152 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
-import itmo.lab5.shared.DataPacket;
-import itmo.lab5.shared.models.Flat;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import itmo.lab5.shared.DataPacket;
+
 public class Server {
     private static final int PORT = 7070;
-    private static final int BUFFER_SIZE = 1024*1024;
+    private static final ExecutorService readPool = Executors.newFixedThreadPool(4);
+    private static final ForkJoinPool processPool = new ForkJoinPool(10);
+    private static final ExecutorService writePool = Executors.newCachedThreadPool();
+
+    private static final Map<SocketChannel, ByteBuffer> writeBuffers = new HashMap<>();
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
+    private static Collection collection;
+    private static DatabaseManager dbManager;
 
-    private static void checkWritePermissions(Path path) throws IOException {
-        if (Files.exists(path)) {
-            if (Files.isDirectory(path)) {
-                throw new SecurityException("Path is a directory: " + path);
-            }
-            if (!Files.isWritable(path)) {
-                throw new SecurityException("File is not writable: " + path);
-            }
-        } else {
-            Path parentDir = path.getParent();
-            if (parentDir == null || !Files.exists(parentDir)) {
-                throw new SecurityException("Parent directory does not exist: " + parentDir);
-            }
-            if (!Files.isDirectory(parentDir)) {
-                throw new SecurityException("Parent path is not a directory: " + parentDir);
-            }
-            if (!Files.isWritable(parentDir)) {
-                throw new SecurityException("Directory is not writable: " + parentDir);
-            }
-        }
-    }
-  
-    public static Path getDataFileFromEnv(String envVariable) throws IOException {
-        String envPath = System.getenv(envVariable);
-        final Path path;
+    public static void main(String[] args) throws IOException {
+        Selector selector = Selector.open();
+        ServerSocketChannel serverSocket = ServerSocketChannel.open();
 
-        if (envPath == null || envPath.trim().isEmpty())
-            throw new IllegalArgumentException(
-                    "Environment variable '" + envVariable + "' is not set or empty.");
+        serverSocket.bind(new InetSocketAddress(PORT));
+        serverSocket.configureBlocking(false);
+        serverSocket.register(selector, SelectionKey.OP_ACCEPT);
+
+        logger.info("Server started on port: " + PORT);
 
         try {
-            path = Paths.get(envPath);
-        } catch (InvalidPathException ex) {
-            throw new IllegalArgumentException(
-                    "The path provided in environment variable '" +
-                           envVariable + "' is invalid: " + ex.getMessage(),
-                    ex);
-        }                   
+            dbManager = DatabaseManager.getInstance(
+                "jdbc:postgresql://127.0.0.1:5432/studs", 
+                "s489388", 
+                "tonL/3319",
+                "s489388"
+            );
+        } catch (SQLException e) {
+            logger.error("Can't connect to DB: " + e.toString());
+            System.exit(1);
+        }
 
-        if (!Files.exists(path))
-            throw new IllegalArgumentException("The file at path '" + path + "' does not exist.");
+        try {
+            collection = Collection.getInstance(dbManager);
+        } catch (SQLException e) {
+            logger.error("Can't parse collection!");
+            System.exit(1);
+        }
 
-        if (!Files.isRegularFile(path))
-            throw new IllegalArgumentException("The path '" + path + "' is not a file. Check twice!");
+        while (true) {
+            selector.select();
 
-        if (!Files.isReadable(path))
-            throw new IllegalArgumentException("The file at path '" + path + "' is not readable. " +
-                    "Check file permissions!");
+            Set<SelectionKey> selectedKeys = selector.selectedKeys();
+            Iterator<SelectionKey> iter = selectedKeys.iterator();
 
-        return path;
-    }
-    
-    public static void main(String[] args) {
-        Path dataFilePath = null;
-        try (Selector selector = Selector.open();
-                ServerSocketChannel serverChannel = ServerSocketChannel.open()) {
+            while (iter.hasNext()) {
+                SelectionKey key = iter.next();
+                iter.remove();
 
-            dataFilePath = getDataFileFromEnv("LAB5_DATA");
-            
-            var collection = new HashMap<Integer, Flat>();
-            try {
-                collection = Reader.parseCSV(dataFilePath.toFile());
-            } catch (Exception e) {
-                logger.error("Can't parse collection from file!", e);
-            }
-            
-            serverChannel.bind(new InetSocketAddress(PORT));
-            serverChannel.configureBlocking(false);
-            serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-
-            logger.info("Server started on port " + PORT);
-
-            while (true) {
-                selector.select();
-
-                Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
-                while (keys.hasNext()) {
-                    SelectionKey key = keys.next();
-                    keys.remove();
-
+                try {
                     if (key.isAcceptable())
-                        handleAccept(key, selector);
-                    else if (key.isReadable())
-                        handleRead(key, collection, dataFilePath);
+                        handleAccept(serverSocket, selector);
+                    else if (key.isReadable()) {
+                        key.interestOps(key.interestOps() & ~SelectionKey.OP_READ); 
+                        readPool.submit(() -> handleRead(key, collection));
+                    } else if (key.isWritable())
+                        writePool.submit(() -> handleWrite(key));
+
+                } catch (Exception e) {
+                    key.cancel();
+                    key.channel().close();
                 }
             }
-        } catch (IOException e) {
-            logger.error("Exception: ", e);
         }
     }
 
-    private static void handleAccept(SelectionKey key, Selector selector) throws IOException {
-        ServerSocketChannel serverChannel = (ServerSocketChannel) key.channel();
-        SocketChannel clientChannel = serverChannel.accept();
-        clientChannel.configureBlocking(false);
-        clientChannel.register(selector, SelectionKey.OP_READ);
-        logger.debug("Accepted connection from " + clientChannel.getRemoteAddress());
+    private static void handleAccept(ServerSocketChannel serverSocket, Selector selector) throws IOException {
+        SocketChannel client = serverSocket.accept();
+        client.configureBlocking(false);
+        client.register(selector, SelectionKey.OP_READ);
+        logger.debug("New connection from: " + client.getRemoteAddress());
     }
 
-    private static void handleRead(SelectionKey key, HashMap<Integer, Flat> collection, Path dataFilePath) throws IOException {
-        SocketChannel clientChannel = (SocketChannel) key.channel();
-        ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-        int bytesRead = clientChannel.read(buffer);
-
-        if (bytesRead == -1) {
-            clientChannel.close();
-            logger.debug("Client disconnected");
-            return;
-        }
-
-        buffer.flip();
-        byte[] data = new byte[buffer.remaining()];
-        buffer.get(data);
-
-        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data))) {
-            Object obj = ois.readObject();
-            if(obj instanceof DataPacket) {
-                DataPacket packet = (DataPacket) obj;
-                
-                String response = CommandManager.getAppropriateCommand(packet, collection, dataFilePath);
-                logger.debug("Recieved command: " + packet.getType());
-                sendResponse(clientChannel, response);
+    private static void handleRead(SelectionKey key, Collection collection) {
+        SocketChannel client = (SocketChannel) key.channel();
+        ByteBuffer buffer = ByteBuffer.allocate(1024 * 1024);
+        try {
+            int read = client.read(buffer);
+            if (read == -1) {
+                client.close();
+                return;
             }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+
+            buffer.flip();
+            ByteArrayInputStream bais = new ByteArrayInputStream(buffer.array(), 0, buffer.limit());
+            ObjectInputStream ois = new ObjectInputStream(bais);
+            DataPacket request = (DataPacket) ois.readObject();
+
+            processPool.submit(() -> {
+                String response = processRequest(request);
+                ByteBuffer responseBuffer = ByteBuffer.wrap(response.getBytes());
+
+                synchronized (writeBuffers){
+                    writeBuffers.put(client, responseBuffer);
+                }
+
+                key.interestOps(SelectionKey.OP_WRITE);
+                key.selector().wakeup(); 
+            });
+
+        } catch (Exception e) {
+            try {
+                client.close();
+            } catch (IOException ignored) {}
         }
     }
 
-    private static void sendResponse(SocketChannel clientChannel, String response) throws IOException {
-        ByteBuffer buffer = ByteBuffer.wrap(response.getBytes());
-        while (buffer.hasRemaining()) {
-            clientChannel.write(buffer);
+    private static String processRequest(DataPacket request) {
+        logger.debug("Got command: " + request.getType());
+        return CommandManager.getAppropriateCommand(request, collection, dbManager);
+    }
+
+    private static void handleWrite(SelectionKey key) {
+        SocketChannel client = (SocketChannel) key.channel();
+        ByteBuffer buffer;
+        synchronized (writeBuffers) {
+            buffer = writeBuffers.get(client);
         }
-        
-        logger.debug("Sending response...");
+
+        try {
+            client.write(buffer);
+            if (!buffer.hasRemaining()) {
+                synchronized (writeBuffers) {
+                    writeBuffers.remove(client);
+                }
+                key.interestOps(SelectionKey.OP_READ);
+            }
+        } catch (IOException e) {
+            try {
+                client.close();
+            } catch (IOException ignored) {}
+        }
     }
 }

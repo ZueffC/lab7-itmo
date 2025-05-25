@@ -1,24 +1,19 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package itmo.lab5.server.commands;
 
-import itmo.lab5.shared.models.Flat;
-import java.util.HashMap;
+import itmo.lab5.server.Collection;
 
 /**
  *
  * @author oxff
  */
 public class ClearCommand {
-        public static String execute(HashMap<Integer, Flat> flats) {
-        if (null == flats || flats.isEmpty())
+        public static String execute(Collection collection) {
+        if (collection == null || collection.getAllFlats().isEmpty())
             return "Collection is empty now!";
 
-        flats.clear();
+        collection.clear();
 
-        return "Collection has been cleared! " 
-                + "(Items now: " + flats.size() + ")";
+        return "Collection has been cleared! "
+                + "(Items now: " + collection.getAllFlats().size() + ")";
     }
 }

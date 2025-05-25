@@ -1,13 +1,13 @@
 package itmo.lab5.server.commands;
 
+import itmo.lab5.server.Collection;
 import itmo.lab5.shared.models.Flat;
 import itmo.lab5.shared.models.House;
 
-import java.util.HashMap;
-
 public class ReplaceCommand {
+    public static String execute(Integer id, Flat newFlat, Collection container) {
+        var collection = container.getAllFlats();
 
-    public static String execute(Integer id, Flat newFlat, HashMap<Integer, Flat> collection) {
         if (collection == null || collection.isEmpty())
             return "Collection is empty!";
 
@@ -17,17 +17,18 @@ public class ReplaceCommand {
         int key = Math.abs(id);
         Flat oldFlat = collection.get(key);
 
+        System.out.println(oldFlat);
+
         if (oldFlat == null)
             return "There's no element with ID = " + key;
 
         boolean replaced = false;
         boolean isNegativeId = id < 0;
 
-        if (isNegativeId) {
-            replaced = ifLower(oldFlat, newFlat);
-        } else {
+        if (isNegativeId)
+            replaced = ifLower(oldFlat, newFlat); 
+        else
             replaced = ifGreater(oldFlat, newFlat);
-        }
 
         if (replaced) {
             collection.put(key, oldFlat);

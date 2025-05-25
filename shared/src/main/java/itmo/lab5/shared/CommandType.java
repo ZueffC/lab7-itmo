@@ -18,5 +18,7 @@ public enum CommandType implements Serializable {
     REPLACE_IF_LOWER,
     REPLACE_IF_GREATER,
     EXECUTE_SCRIPT,
-    SERVER_SAVE
+    SERVER_SAVE,
+    SIGN_UP,
+    SIGN_IN,
 }

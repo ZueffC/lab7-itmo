@@ -4,6 +4,9 @@
  */
 package itmo.lab5.client.cli.commands;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import itmo.lab5.client.cli.CommandContext;
 import itmo.lab5.client.interfaces.Command;
 import itmo.lab5.client.net.RequestSender;
@@ -11,8 +14,6 @@ import itmo.lab5.shared.CommandType;
 import itmo.lab5.shared.DataPacket;
 import itmo.lab5.shared.models.Flat;
 import itmo.lab5.shared.models.enums.View;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 
 /**

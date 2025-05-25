@@ -3,9 +3,27 @@ package itmo.lab5.client;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
-import itmo.lab5.client.cli.*;
-import itmo.lab5.client.cli.commands.*;
+
+import itmo.lab5.client.cli.CommandBuilder;
+import itmo.lab5.client.cli.CommandContext;
+import itmo.lab5.client.cli.CommandInvoker;
+import itmo.lab5.client.cli.CommandRegistry;
+import itmo.lab5.client.cli.commands.ClearCommand;
+import itmo.lab5.client.cli.commands.ExecuteCommand;
+import itmo.lab5.client.cli.commands.ExitCommand;
+import itmo.lab5.client.cli.commands.FieldCommand;
+import itmo.lab5.client.cli.commands.FilterCommand;
+import itmo.lab5.client.cli.commands.HelpCommand;
+import itmo.lab5.client.cli.commands.HistoryCommand;
+import itmo.lab5.client.cli.commands.InfoCommand;
+import itmo.lab5.client.cli.commands.InsertCommand;
+import itmo.lab5.client.cli.commands.RemoveKeyCommand;
+import itmo.lab5.client.cli.commands.ReplaceCommand;
+import itmo.lab5.client.cli.commands.ShowCommand;
+import itmo.lab5.client.cli.commands.UpdateCommand;
 import itmo.lab5.client.net.RequestSender;
+import itmo.lab5.shared.CommandType;
+import itmo.lab5.shared.DataPacket;
 
 /**
  * This class is an entry point of the application.
@@ -33,18 +51,45 @@ public class App {
                 .register("history", new HistoryCommand())
                 .register("remove_key", new RemoveKeyCommand())
                 .register("execute_script", new ExecuteCommand())
-                .register("replace_if_lower", new ReplaceCommand("lower"))
-                .register("filter_less_than_view", new FilterCommand("less"))
-                .register("replace_if_greater", new ReplaceCommand("greater"))
                 .register("filter_greater_than_view", new FilterCommand("greater"))
+                .register("replace_if_greater", new ReplaceCommand("greater"))
+                .register("filter_less_than_view", new FilterCommand("less"))
+                .register("replace_if_lower", new ReplaceCommand("lower"))
                 .register("print_field_ascending_number_of_rooms", new FieldCommand())
                 .build();
 
         context.set("registry", registry);
         CommandInvoker invoker = new CommandInvoker(registry, context);
         context.set("commandInvoker", invoker);
-
         var scanner = new Scanner(System.in);
+
+        System.out.println("Hi! This app requires signup before working with data!");
+        String regFlag;
+        CommandType authType = null;
+
+        do {
+            System.out.print("Do you want to sign in? (y/n): ");
+            regFlag = scanner.nextLine().trim();
+
+            if ("y".equalsIgnoreCase(regFlag))
+                authType = CommandType.SIGN_IN;
+            else if ("n".equalsIgnoreCase(regFlag))
+                authType = CommandType.SIGN_UP;
+            else
+                System.out.println("Invalid input. Please enter 'y' or 'n'.");
+        } while (!"y".equalsIgnoreCase(regFlag) && !"n".equalsIgnoreCase(regFlag));  
+
+        System.out.print("Your nick: ");
+        var nick = scanner.nextLine().trim();
+
+        System.out.print("Your password: ");
+        var password = scanner.nextLine().trim();
+        
+        String result = new String();
+        if(authType.equals(CommandType.SIGN_UP))
+            result = RequestSender.getInstance().sendRequest(
+                new DataPacket(authType, null, null).setNick(nick).setPassword(password));
+
         while (true) {
             try {
                 System.out.print("> ");

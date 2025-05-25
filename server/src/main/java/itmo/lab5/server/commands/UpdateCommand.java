@@ -1,14 +1,17 @@
 package itmo.lab5.server.commands;
 
+
+import itmo.lab5.server.Collection;
 import itmo.lab5.shared.models.Flat;
-import java.util.HashMap;
 
 /**
  *
  * @author oxff
  */
 public class UpdateCommand {
-    public static String execute(int id, Flat newFlat, HashMap<Integer, Flat> collection) {
+    public static String execute(int id, Flat newFlat, Collection container) {
+        var collection = container.getAllFlats();
+
         var oldFlat = collection.getOrDefault(id, null);
         if (oldFlat == null)
             return "There is not flat with such id!";
@@ -36,7 +39,8 @@ public class UpdateCommand {
         if (newFlat.getTransport() != null)
             oldFlat.setTransport(newFlat.getTransport());
 
-        oldFlat.setView(newFlat.getView());
+        if (newFlat.getView() != null)
+            oldFlat.setView(newFlat.getView());
 
         var newHouse = newFlat.getHouse();
         if (newHouse.getName() != null)
@@ -49,6 +53,7 @@ public class UpdateCommand {
         if (newHouse.getYear() != null && newHouse.getYear() > 0 && newHouse.getYear() <= 959)
             oldFlat.getHouse().setYear(newHouse.getYear());
 
+        container.addFlat(oldFlat.getId(), oldFlat);
         return "Flat has been successfully updated!";
     }
 }

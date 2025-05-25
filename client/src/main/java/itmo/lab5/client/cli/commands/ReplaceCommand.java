@@ -1,15 +1,21 @@
 package itmo.lab5.client.cli.commands;
 
-import itmo.lab5.client.cli.CommandContext;
-import itmo.lab5.client.interfaces.Command;
-import itmo.lab5.client.net.RequestSender;
-import itmo.lab5.shared.*;
-import itmo.lab5.shared.models.*;
-import itmo.lab5.shared.models.enums.*;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Scanner;
+
+import itmo.lab5.client.cli.CommandContext;
+import itmo.lab5.client.interfaces.Command;
+import itmo.lab5.client.net.RequestSender;
+import itmo.lab5.shared.CommandType;
+import itmo.lab5.shared.DataPacket;
+import itmo.lab5.shared.models.Coordinates;
+import itmo.lab5.shared.models.Flat;
+import itmo.lab5.shared.models.House;
+import itmo.lab5.shared.models.enums.Furnish;
+import itmo.lab5.shared.models.enums.Transport;
+import itmo.lab5.shared.models.enums.View;
 
 /**
  *
@@ -19,11 +25,14 @@ public class ReplaceCommand implements Command {
     private final Scanner scanner = new Scanner(System.in);
     private final ReaderUtil inputReader = new ReaderUtil(scanner);
     private static final String description = "command allows to update collection's element by provided id in k=v manner";
-    private static CommandType command_type;
+    private CommandType command_type;
     
     public ReplaceCommand(String classificator) {
-        if("less".equals(classificator)) this.command_type = CommandType.REPLACE_IF_LOWER;
-        else this.command_type = CommandType.REPLACE_IF_GREATER;
+        if("lower".equals(classificator)) {
+            this.command_type = CommandType.REPLACE_IF_LOWER;
+        } else {
+            this.command_type = CommandType.REPLACE_IF_GREATER;
+        }
     }
     
     public final String toString() {
@@ -45,7 +54,6 @@ public class ReplaceCommand implements Command {
             return "Can't update element without ID!";
 
         int id;
-
         try {
             id = Integer.parseInt(args[0]);
         } catch (Exception e) {
@@ -53,19 +61,22 @@ public class ReplaceCommand implements Command {
         }
 
         Flat updatedFlat = null;
-
         if (args.length > 1) {
             updatedFlat = updateByArgs(args, id);
-            if (updatedFlat == null)
-                return "Failed to update flat from arguments.";
-
-            return RequestSender.getInstance().sendRequest(
-                    new DataPacket(this.command_type, id, updatedFlat));
+        } else {
+            updatedFlat = updateInteractive(context, id);
         }
 
-        updatedFlat = updateInteractive(context, id);
-        return RequestSender.getInstance().sendRequest(
-                new DataPacket(this.command_type, id, updatedFlat));
+        if (updatedFlat == null)
+            return "Failed to update flat from arguments.";
+
+        if (this.command_type == CommandType.REPLACE_IF_GREATER) {
+            return RequestSender.getInstance().sendRequest(new DataPacket(CommandType.REPLACE_IF_GREATER, id, updatedFlat));
+        } else if (this.command_type == CommandType.REPLACE_IF_LOWER) {
+            return RequestSender.getInstance().sendRequest(new DataPacket(CommandType.REPLACE_IF_LOWER, id, updatedFlat));
+        }
+
+        return "Unknown replace condition.";
     }
 
     private Flat updateInteractive(CommandContext context, int id) {

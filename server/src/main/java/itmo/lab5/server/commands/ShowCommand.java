@@ -1,11 +1,11 @@
 package itmo.lab5.server.commands;
 
-import itmo.lab5.shared.models.Flat;
-
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import itmo.lab5.shared.models.Flat;
 
 public class ShowCommand {
     public static String execute(HashMap<Integer, Flat> flats) {

@@ -1,7 +1,9 @@
 package itmo.lab5.server.commands;
 
-import itmo.lab5.shared.models.Flat;
 import java.util.HashMap;
+
+import itmo.lab5.server.Collection;
+import itmo.lab5.shared.models.Flat;
 
 public class RemoveKeyCommand {
      public static HashMap<Integer, Flat> remapIDs(HashMap<Integer, Flat> originalMap) {
@@ -18,11 +20,11 @@ public class RemoveKeyCommand {
         return newMap;
     }
     
-    public static String execute(Integer id, HashMap<Integer, Flat> flats) {
-        if (null == flats || flats.isEmpty())
+    public static String execute(Integer id, Collection collection) {
+        if (collection == null || collection.getAllFlats().isEmpty())
             return "Collection is empty now!";
         
-        flats.remove(id);
+        collection.removeFlat(id);
         
         return "Element was successfuly deleted from collection!";
     }
