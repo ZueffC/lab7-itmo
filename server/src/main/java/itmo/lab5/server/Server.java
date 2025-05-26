@@ -21,10 +21,11 @@ import java.util.concurrent.ForkJoinPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import itmo.lab5.shared.CommandType;
 import itmo.lab5.shared.DataPacket;
 
 public class Server {
-    private static final int PORT = 7070;
+    private static final int PORT = Integer.parseInt(System.getProperty("PORT", "7070"));
     private static final ExecutorService readPool = Executors.newFixedThreadPool(4);
     private static final ForkJoinPool processPool = new ForkJoinPool(10);
     private static final ExecutorService writePool = Executors.newCachedThreadPool();
@@ -46,10 +47,10 @@ public class Server {
 
         try {
             dbManager = DatabaseManager.getInstance(
-                "jdbc:postgresql://127.0.0.1:5432/studs", 
-                "s489388", 
-                "tonL/3319",
-                "s489388"
+                System.getProperty("DB_URL", "jdbc:postgresql://localhost:5432/studs"), 
+                System.getProperty("DB_USER", "s489388"), 
+                System.getProperty("DB_PASSWORD", ""),
+                System.getProperty("DB_SCHEME", "s489388")
             );
         } catch (SQLException e) {
             logger.error("Can't connect to DB: " + e.toString());
@@ -133,7 +134,17 @@ public class Server {
 
     private static String processRequest(DataPacket request) {
         logger.debug("Got command: " + request.getType());
-        return CommandManager.getAppropriateCommand(request, collection, dbManager);
+
+        try {
+            if(dbManager.userExists(request.getNick(), request.getPassword()) || request.getType() == CommandType.SIGN_UP) {
+                return CommandManager.getAppropriateCommand(request, collection, dbManager);
+            } else {
+                return "You can't interract with data without sign up!";
+            }
+        } catch (SQLException ex) {
+            logger.error(ex.getMessage());
+            return "There's an SQL error!";
+        }
     }
 
     private static void handleWrite(SelectionKey key) {

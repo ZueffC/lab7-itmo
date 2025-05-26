@@ -38,7 +38,7 @@ public class App {
      */
     public static void main(String[] g_args) {
         RequestSender.init("localhost", 7070);
-        CommandContext context = new CommandContext();
+        CommandContext context = CommandContext.getInstance();
         CommandRegistry registry = new CommandBuilder()
                 .register("show", new ShowCommand())
                 .register("help", new HelpCommand())
@@ -67,6 +67,9 @@ public class App {
         String regFlag;
         CommandType authType = null;
 
+        String nick = new String("");
+        String password = new String("");
+
         do {
             System.out.print("Do you want to sign in? (y/n): ");
             regFlag = scanner.nextLine().trim();
@@ -77,18 +80,23 @@ public class App {
                 authType = CommandType.SIGN_UP;
             else
                 System.out.println("Invalid input. Please enter 'y' or 'n'.");
-        } while (!"y".equalsIgnoreCase(regFlag) && !"n".equalsIgnoreCase(regFlag));  
+        } while (
+            !"y".equalsIgnoreCase(regFlag) && !"n".equalsIgnoreCase(regFlag));  
 
-        System.out.print("Your nick: ");
-        var nick = scanner.nextLine().trim();
+        do {
+            System.out.print("Your nick: ");
+            nick = scanner.nextLine().trim();
 
-        System.out.print("Your password: ");
-        var password = scanner.nextLine().trim();
-        
+            System.out.print("Your password: ");
+            password = scanner.nextLine().trim();
+        } while (nick.trim().isEmpty() || password.trim().isEmpty());
+
+        context.set("nick", nick);
+        context.set("password", password);
+
         String result = new String();
         if(authType.equals(CommandType.SIGN_UP))
-            result = RequestSender.getInstance().sendRequest(
-                new DataPacket(authType, null, null).setNick(nick).setPassword(password));
+            result = RequestSender.getInstance().sendRequest(new DataPacket(authType, null, null));
 
         while (true) {
             try {

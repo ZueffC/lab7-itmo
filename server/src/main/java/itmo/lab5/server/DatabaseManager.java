@@ -1,5 +1,8 @@
 package itmo.lab5.server;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -261,6 +264,98 @@ public class DatabaseManager {
             return clearTable(tableName);
         } finally {
             lock.unlock();
+        }
+    }
+
+    private boolean usernameExists(String username) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM " + table("users") + " WHERE name = ?";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean addUser(String username, String password) throws SQLException {
+        lock.lock();
+        try {
+            if (usernameExists(username)) {
+                return false;
+            }
+
+            String salt = generateDeterministicSalt(username);
+            String hashedPassword = hashPasswordWithSalt(password, salt);
+            String sql = "INSERT INTO " + table("users") + " (name, password) VALUES (?, ?)";
+            
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, username);
+                stmt.setString(2, hashedPassword);
+                
+                int rowsAffected = stmt.executeUpdate();
+                return rowsAffected > 0;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public boolean userExists(String username, String password) throws SQLException {
+        String storedHash = getPasswordHash(username);
+        if (storedHash == null) {
+            return false;
+        }
+        
+        String salt = generateDeterministicSalt(username);
+        String hashedInputPassword = hashPasswordWithSalt(password, salt);
+        
+        return storedHash.equals(hashedInputPassword);
+    }
+
+    private String getPasswordHash(String username) throws SQLException {
+        String sql = "SELECT password FROM " + table("users") + " WHERE name = ?";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("password");
+                }
+            }
+        }
+        return null;
+    }
+
+    private String generateDeterministicSalt(String username) {
+        String prefix = username.length() > 0 ? 
+            username.substring(0, Math.min(4, username.length())) : "";
+        
+        String reversed = new StringBuilder(prefix).reverse().toString();
+        return reversed + username.length() + username.hashCode();
+    }
+
+    private String hashPasswordWithSalt(String password, String salt) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            String combined = salt.substring(0, Math.min(2, salt.length())) + 
+                            password + 
+                            salt.substring(Math.min(2, salt.length()));
+            
+            byte[] hash = md.digest(combined.getBytes(StandardCharsets.UTF_8));
+            
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("MD5 algorithm not found", e);
         }
     }
 

@@ -33,7 +33,7 @@ public class CommandManager {
 
     public static String getAppropriateCommand(DataPacket pack, Collection collection, DatabaseManager dbManager) {
         history.add(pack.getType().name().toLowerCase());
-
+    
         var result = switch (pack.getType()) {
             case SHOW -> ShowCommand.execute(collection.getAllFlats());
             case INFO -> InfoCommand.execute(collection.getAllFlats());
@@ -47,7 +47,7 @@ public class CommandManager {
             case UPDATE -> UpdateCommand.execute(pack.getId(), pack.getFlat(), collection);
             case REPLACE_IF_GREATER -> ReplaceCommand.execute(pack.getId(), pack.getFlat(), collection);
             case REPLACE_IF_LOWER -> ReplaceCommand.execute(pack.getId() * -1, pack.getFlat(), collection);
-            case SIGN_UP -> SignUpCommand.execute(dbManager);
+            case SIGN_UP -> SignUpCommand.execute(pack, dbManager);
             default -> "There's no such command!";
         };
 
