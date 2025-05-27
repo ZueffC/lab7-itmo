@@ -1,15 +1,20 @@
 package itmo.lab5.client.cli.commands;
 
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Scanner;
+
 import itmo.lab5.client.cli.CommandContext;
 import itmo.lab5.client.interfaces.Command;
 import itmo.lab5.client.net.RequestSender;
 import itmo.lab5.shared.CommandType;
 import itmo.lab5.shared.DataPacket;
-import itmo.lab5.shared.models.*;
-import itmo.lab5.shared.models.enums.*;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Scanner;
+import itmo.lab5.shared.models.Coordinates;
+import itmo.lab5.shared.models.Flat;
+import itmo.lab5.shared.models.House;
+import itmo.lab5.shared.models.enums.Furnish;
+import itmo.lab5.shared.models.enums.Transport;
+import itmo.lab5.shared.models.enums.View;
 
 /**
  * This class implements the Command interface and provides
@@ -54,6 +59,12 @@ public class InsertCommand implements Command {
         var creationDate = LocalDate.now();
         String name = inputReader.promptString("- Enter name: ", false, null);
 
+        String ownerNick = null;
+        try {
+            ownerNick = (String) context.get("nick");
+        } catch (Exception e) {}
+
+        
         System.out.println("- Coordinates ");
         Long x = inputReader.promptNumber("\t Enter x: ", Long.MIN_VALUE, Long.MAX_VALUE, Long::parseLong, null);
         Double y = inputReader.promptNumber("\t Enter y: ", Double.MIN_VALUE, Double.MAX_VALUE, Double::parseDouble, null);
@@ -88,7 +99,9 @@ public class InsertCommand implements Command {
                 furnish,
                 view,
                 transport,
-                house);
+                house,
+                ownerNick
+            );
 
         return RequestSender.getInstance().sendRequest(new DataPacket(CommandType.INSERT, -1, flat));
     }
@@ -110,6 +123,12 @@ public class InsertCommand implements Command {
             if (parts.length == 2)
                 params.put(parts[0], parts[1]);
         }
+
+        String ownerNick = null;
+        try {
+            ownerNick = (String) context.get("nick");
+        } catch (Exception e) {}
+
 
         var creationDate = LocalDate.now();
         String name = params.containsKey("name") ? params.get("name")
@@ -194,7 +213,9 @@ public class InsertCommand implements Command {
                 furnish,
                 view,
                 transport,
-                house);
+                house,
+                ownerNick
+            );
 
         return RequestSender.getInstance().sendRequest(new DataPacket(CommandType.INSERT, -1, flat));
     }

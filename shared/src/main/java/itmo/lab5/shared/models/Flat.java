@@ -1,9 +1,12 @@
 package itmo.lab5.shared.models;
 
 import java.io.Serializable;
-import itmo.lab5.shared.models.enums.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+import itmo.lab5.shared.models.enums.Furnish;
+import itmo.lab5.shared.models.enums.Transport;
+import itmo.lab5.shared.models.enums.View;
 
 /**
  * Represents a flat, provided by se.ifmo.ru (no 462025)
@@ -21,6 +24,7 @@ public class Flat implements Comparable<Flat>, Serializable {
   private View view; // Поле может быть null
   private Transport transport; // Поле не может быть null
   private House house; // Поле может быть null
+  private String ownerName; // Added field for owner's username
   private static final long serialVersionUID = 1L;
 
   /**
@@ -41,9 +45,10 @@ public class Flat implements Comparable<Flat>, Serializable {
    *                      null).
    * @param house         the house details associated with the flat (can be
    *                      null).
+   * @param ownerName     the username of the owner of this flat.
    */
   public Flat(int id, String name, Coordinates coordinates, LocalDate creationDate, Double area,
-      Integer numberOfRooms, Furnish furnish, View view, Transport transport, House house) {
+      Integer numberOfRooms, Furnish furnish, View view, Transport transport, House house, String ownerName) {
     this.id = id;
     this.name = name;
     this.coordinates = coordinates;
@@ -54,6 +59,7 @@ public class Flat implements Comparable<Flat>, Serializable {
     this.view = view;
     this.transport = transport;
     this.house = house;
+    this.ownerName = ownerName;
   }
 
   /**
@@ -247,9 +253,25 @@ public class Flat implements Comparable<Flat>, Serializable {
   }
 
   /**
+   * Gets the owner's username for this flat.
+   * @return the owner's username
+   */
+  public String getOwnerName() {
+      return ownerName;
+  }
+
+  /**
+   * Sets the owner's username for this flat.
+   * @param ownerName the new owner's username
+   */
+  public void setOwnerName(String ownerName) {
+      this.ownerName = ownerName;
+  }
+
+  /**
    * Returns a string representation of the flat, including its ID, name,
    * coordinates, creation date, area, number of rooms, furnishing status,
-   * view, transport, and house.
+   * view, transport, house, and owner.
    *
    * @return a string representation of the flat
    */
@@ -269,7 +291,8 @@ public class Flat implements Comparable<Flat>, Serializable {
         .append("  Furnish: ").append(furnish).append("\n")
         .append("  View: ").append(view != null ? view : "null").append("\n")
         .append("  Transport: ").append(transport).append("\n")
-        .append("  House: ").append(house != null ? house.toString() : "null").append("\n");
+        .append("  House: ").append(house != null ? house.toString() : "null").append("\n")
+        .append("  Owner: ").append(ownerName != null ? ownerName : "null").append("\n"); // Include owner
 
     return builder.toString();
   }

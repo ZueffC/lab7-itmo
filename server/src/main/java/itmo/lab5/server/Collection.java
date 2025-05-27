@@ -30,12 +30,12 @@ public class Collection {
         return instance;
     }
     
-    public synchronized void addFlat(int id, Flat flat) {
+    public synchronized void addFlat(int id, Flat flat, String nick) {
         if (flat == null)
             throw new IllegalArgumentException("Flat cannot be null");
         
         try {
-            db.insertFlat(flat);
+            db.insertFlat(flat, nick);
         } catch (SQLException e) {
             return;
         }
@@ -43,9 +43,9 @@ public class Collection {
         collection.put(id, flat);
     }
     
-    public synchronized Flat removeFlat(int id) {
+    public synchronized Flat removeFlat(int id, String nick) {
         try {
-            db.removeFlat(id);
+            db.removeFlat(id, nick);
         } catch (SQLException e) {
             return null;
         }
@@ -65,9 +65,9 @@ public class Collection {
         return collection.size();
     }
     
-    public synchronized void clear() {
+    public synchronized void clear(String nick) {
         try {
-            db.clearTable("flats");
+            db.clearFlatsByOwner(nick);
         } catch(SQLException e) {
             return;
         }

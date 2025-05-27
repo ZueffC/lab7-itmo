@@ -62,7 +62,7 @@ public class ReplaceCommand implements Command {
 
         Flat updatedFlat = null;
         if (args.length > 1) {
-            updatedFlat = updateByArgs(args, id);
+            updatedFlat = updateByArgs(context, args, id);
         } else {
             updatedFlat = updateInteractive(context, id);
         }
@@ -136,6 +136,11 @@ public class ReplaceCommand implements Command {
 
         house = new House(houseName, year, floors);
 
+        String ownerNick = null;
+        try {
+            ownerNick = (String) context.get("nick");
+        } catch (Exception e) {}
+
         try {
             return new Flat(
                     id,
@@ -147,14 +152,15 @@ public class ReplaceCommand implements Command {
                     furnish,
                     view,
                     transport,
-                    house);
+                    house,
+                    ownerNick);
         } catch (Exception e) {
             System.out.println("There's an error while trying to add new element. Collection is broken.");
             return null;
         }
     }
 
-    private Flat updateByArgs(String[] args, int id) {
+    private Flat updateByArgs(CommandContext context, String[] args, int id) {
         HashMap<String, String> params = new HashMap<>();
  
         for (String arg : args) {
@@ -217,6 +223,11 @@ public class ReplaceCommand implements Command {
             house = new House(houseName, year, floors);
             var currentDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
+            String ownerNick = null;
+            try {
+                ownerNick = (String) context.get("nick");
+            } catch (Exception e) {}
+
             return new Flat(
                     id,
                     name,
@@ -227,7 +238,8 @@ public class ReplaceCommand implements Command {
                     furnish,
                     view,
                     transport,
-                    house);
+                    house,
+                    ownerNick);
         } catch (IllegalArgumentException e) {
             return null;
         }

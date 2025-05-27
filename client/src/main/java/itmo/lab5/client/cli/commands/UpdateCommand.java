@@ -4,15 +4,22 @@ package itmo.lab5.client.cli.commands;
  *
  * @author oxff
  */
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Scanner;
+
 import itmo.lab5.client.cli.CommandContext;
 import itmo.lab5.client.interfaces.Command;
 import itmo.lab5.client.net.RequestSender;
 import itmo.lab5.shared.CommandType;
 import itmo.lab5.shared.DataPacket;
-import itmo.lab5.shared.models.*;
-import itmo.lab5.shared.models.enums.*;
-import java.time.ZoneId;
-import java.util.*;
+import itmo.lab5.shared.models.Coordinates;
+import itmo.lab5.shared.models.Flat;
+import itmo.lab5.shared.models.House;
+import itmo.lab5.shared.models.enums.Furnish;
+import itmo.lab5.shared.models.enums.Transport;
+import itmo.lab5.shared.models.enums.View;
 
 /**
  * This class implements the Command interface and provides
@@ -58,7 +65,7 @@ public class UpdateCommand implements Command {
         Flat updatedFlat = null;
 
         if (args.length > 1) {
-            updatedFlat = updateByArgs(args, id);
+            updatedFlat = updateByArgs(context, args, id);
             if (updatedFlat == null)
                 return "Failed to update flat from arguments.";
 
@@ -127,6 +134,11 @@ public class UpdateCommand implements Command {
 
         house = new House(houseName, year, floors);
 
+        String ownerNick = null;
+        try {
+            ownerNick = (String) context.get("nick");
+        } catch (Exception e) {}
+
         try {
             return new Flat(
                     id,
@@ -138,14 +150,15 @@ public class UpdateCommand implements Command {
                     furnish,
                     view,
                     transport,
-                    house);
+                    house,
+                    ownerNick);
         } catch (Exception e) {
             System.out.println("There's an error while trying to add new element. Collection is broken.");
             return null;
         }
     }
 
-    private Flat updateByArgs(String[] args, int id) {
+    private Flat updateByArgs(CommandContext context, String[] args, int id) {
         HashMap<String, String> params = new HashMap<>();
 
         for (String arg : args) {
@@ -208,6 +221,11 @@ public class UpdateCommand implements Command {
             house = new House(houseName, year, floors);
             var currentDate = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
+            String ownerNick = null;
+            try {
+                ownerNick = (String) context.get("nick");
+            } catch (Exception e) {}
+
             return new Flat(
                     id,
                     name,
@@ -218,7 +236,8 @@ public class UpdateCommand implements Command {
                     furnish,
                     view,
                     transport,
-                    house);
+                    house,
+                    ownerNick);
         } catch (IllegalArgumentException e) {
             return null;
         }

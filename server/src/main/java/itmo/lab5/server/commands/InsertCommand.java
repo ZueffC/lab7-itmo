@@ -11,7 +11,7 @@ import itmo.lab5.shared.models.Flat;
  * @author oxff
  */
 public class InsertCommand {
-    public static String execute(Flat newFlat, Collection collection) {
+    public static String execute(Flat newFlat, Collection collection, String nick) {
         int newId = -1;
 
         List<Integer> keys = new ArrayList<>(collection.getAllFlats().keySet());
@@ -21,7 +21,7 @@ public class InsertCommand {
             newId = 1;
 
         newFlat.setId(newId);
-        collection.addFlat(newId, newFlat);
+        collection.addFlat(newId, newFlat, nick);
 
         return "Element was successfuly inserted to collection!";
     }

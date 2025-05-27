@@ -5,7 +5,7 @@ import itmo.lab5.shared.models.Flat;
 import itmo.lab5.shared.models.House;
 
 public class ReplaceCommand {
-    public static String execute(Integer id, Flat newFlat, Collection container) {
+    public static String execute(Integer id, Flat newFlat, Collection container, String nick) {
         var collection = container.getAllFlats();
 
         if (collection == null || collection.isEmpty())
@@ -16,8 +16,6 @@ public class ReplaceCommand {
 
         int key = Math.abs(id);
         Flat oldFlat = collection.get(key);
-
-        System.out.println(oldFlat);
 
         if (oldFlat == null)
             return "There's no element with ID = " + key;
@@ -31,6 +29,9 @@ public class ReplaceCommand {
             replaced = ifGreater(oldFlat, newFlat);
 
         if (replaced) {
+            if(oldFlat.getOwnerName() == null ? newFlat.getOwnerName() != null : !oldFlat.getOwnerName().equals(newFlat.getOwnerName()))
+                return "Can't update someone else data!";
+
             collection.put(key, oldFlat);
             return "Element with ID = " + key + " has been updated.";
         } else {

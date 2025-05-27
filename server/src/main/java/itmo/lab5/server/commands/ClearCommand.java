@@ -7,11 +7,11 @@ import itmo.lab5.server.Collection;
  * @author oxff
  */
 public class ClearCommand {
-        public static String execute(Collection collection) {
+        public static String execute(Collection collection, String nick) {
         if (collection == null || collection.getAllFlats().isEmpty())
             return "Collection is empty now!";
 
-        collection.clear();
+        collection.clear(nick);
 
         return "Collection has been cleared! "
                 + "(Items now: " + collection.getAllFlats().size() + ")";

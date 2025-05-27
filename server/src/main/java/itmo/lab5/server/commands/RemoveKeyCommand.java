@@ -20,11 +20,11 @@ public class RemoveKeyCommand {
         return newMap;
     }
     
-    public static String execute(Integer id, Collection collection) {
+    public static String execute(Integer id, Collection collection, String nick) {
         if (collection == null || collection.getAllFlats().isEmpty())
             return "Collection is empty now!";
         
-        collection.removeFlat(id);
+        collection.removeFlat(id, nick);
         
         return "Element was successfuly deleted from collection!";
     }

@@ -37,16 +37,16 @@ public class CommandManager {
         var result = switch (pack.getType()) {
             case SHOW -> ShowCommand.execute(collection.getAllFlats());
             case INFO -> InfoCommand.execute(collection.getAllFlats());
-            case CLEAR -> ClearCommand.execute(collection);
+            case CLEAR -> ClearCommand.execute(collection, pack.getNick());
             case HISTORY -> history.toString();
-            case REMOVE_KEY -> RemoveKeyCommand.execute(pack.getId(), collection);
-            case INSERT -> InsertCommand.execute(pack.getFlat(), collection);
+            case REMOVE_KEY -> RemoveKeyCommand.execute(pack.getId(), collection, pack.getNick());
+            case INSERT -> InsertCommand.execute(pack.getFlat(), collection, pack.getNick());
             case FILTER_LESS_THAN_VIEW -> FilterCommand.execute("less", collection.getAllFlats(), pack.getFlat());
             case FILTER_GREATER_THAN_VIEW -> FilterCommand.execute("greater", collection.getAllFlats(), pack.getFlat());
             case PRINT_FIELD_ASCENDING_NUMBER_OF_ROOMS -> FieldCommand.execute(collection.getAllFlats());
-            case UPDATE -> UpdateCommand.execute(pack.getId(), pack.getFlat(), collection);
-            case REPLACE_IF_GREATER -> ReplaceCommand.execute(pack.getId(), pack.getFlat(), collection);
-            case REPLACE_IF_LOWER -> ReplaceCommand.execute(pack.getId() * -1, pack.getFlat(), collection);
+            case UPDATE -> UpdateCommand.execute(pack.getId(), pack.getFlat(), collection, pack.getNick());
+            case REPLACE_IF_GREATER -> ReplaceCommand.execute(pack.getId(), pack.getFlat(), collection, pack.getNick());
+            case REPLACE_IF_LOWER -> ReplaceCommand.execute(pack.getId() * -1, pack.getFlat(), collection, pack.getNick());
             case SIGN_UP -> SignUpCommand.execute(pack, dbManager);
             default -> "There's no such command!";
         };
