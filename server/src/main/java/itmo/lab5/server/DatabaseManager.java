@@ -16,37 +16,31 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import itmo.lab5.shared.models.Coordinates;
 import itmo.lab5.shared.models.Flat;
 import itmo.lab5.shared.models.House;
 import itmo.lab5.shared.models.enums.Furnish;
-import itmo.lab5.shared.models.enums.Transport; // Добавим импорт для логирования
-import itmo.lab5.shared.models.enums.View; // Добавим импорт для логирования
+import itmo.lab5.shared.models.enums.Transport;
+import itmo.lab5.shared.models.enums.View;
 
 public class DatabaseManager {
     private static final Map<String, DatabaseManager> instances = new HashMap<>();
     private final Connection connection;
     private final ReentrantLock lock = new ReentrantLock();
     private final String schema;
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseManager.class); // Инициализация логгера
 
     private DatabaseManager(String url, String user, String password, String schema) throws SQLException {
         this.connection = DriverManager.getConnection(url, user, password);
         this.schema = schema;
         
         try (Statement stmt = connection.createStatement()) {
-            // Попытка установить схему, игнорируем, если уже установлена или не поддерживается
+            // Attempt to set schema, ignore if already set or not supported
             stmt.execute("SET SCHEMA '" + schema + "'");
         } catch (SQLException e) {
-             logger.warn("Warning: Could not set schema to '{}': {}", schema, e.getMessage());
+             // Log or handle the exception if setting schema fails, but don't stop execution.
+             // For example, if the schema is already set or user doesn't have permission to SET SCHEMA.
+             System.err.println("Warning: Could not set schema to '" + schema + "': " + e.getMessage());
         }
-
-        // Вызываем новые методы для создания ENUM типов и таблиц, если они не существуют
-        createEnumTypesIfNotExist();
-        createTablesIfNotExist();
     }
 
     public static synchronized DatabaseManager getInstance(String url, String user, String password, String schema) throws SQLException {
@@ -63,133 +57,6 @@ public class DatabaseManager {
     private String table(String tableName) {
         return schema + "." + tableName;
     }
-
-    /**
-     * Проверяет существование и создает необходимые ENUM типы в базе данных, если они отсутствуют.
-     * Использует блокировку для обеспечения потокобезопасности при запуске.
-     * @throws SQLException Если произошла ошибка при создании типов ENUM.
-     */
-    private void createEnumTypesIfNotExist() throws SQLException {
-        lock.lock(); // Блокировка для предотвращения одновременного создания ENUM
-        try (Statement stmt = connection.createStatement()) {
-            logger.info("Checking/creating enum types for schema '{}'...", schema);
-
-            // DDL для ENUM типа Furnish
-            String createFurnishEnum = "CREATE TYPE " + schema + ".Furnish AS ENUM ('DESIGNER', 'FINE', 'BAD')";
-            // DDL для ENUM типа View
-            String createViewEnum = "CREATE TYPE " + schema + ".View AS ENUM ('STREET', 'PARK', 'NORMAL', 'GOOD')";
-            // DDL для ENUM типа Transport
-            String createTransportEnum = "CREATE TYPE " + schema + ".Transport AS ENUM ('FEW', 'NONE', 'LITTLE', 'NORMAL')";
-
-            // Попытка создать Furnish
-            try {
-                stmt.execute(createFurnishEnum);
-                logger.info("Enum type '{}.Furnish' created.", schema);
-            } catch (SQLException e) {
-                // Код состояния SQL "42710" означает, что объект уже существует
-                if (e.getSQLState().equals("42710")) { 
-                    logger.debug("Enum type '{}.Furnish' already exists.", schema);
-                } else {
-                    logger.error("Error creating enum type '{}.Furnish': {}", schema, e.getMessage());
-                    throw e; // Перебрасываем, если это настоящая ошибка
-                }
-            }
-
-            // Попытка создать View
-            try {
-                stmt.execute(createViewEnum);
-                logger.info("Enum type '{}.View' created.", schema);
-            } catch (SQLException e) {
-                if (e.getSQLState().equals("42710")) {
-                    logger.debug("Enum type '{}.View' already exists.", schema);
-                } else {
-                    logger.error("Error creating enum type '{}.View': {}", schema, e.getMessage());
-                    throw e;
-                }
-            }
-
-            // Попытка создать Transport
-            try {
-                stmt.execute(createTransportEnum);
-                logger.info("Enum type '{}.Transport' created.", schema);
-            } catch (SQLException e) {
-                if (e.getSQLState().equals("42710")) {
-                    logger.debug("Enum type '{}.Transport' already exists.", schema);
-                } else {
-                    logger.error("Error creating enum type '{}.Transport': {}", schema, e.getMessage());
-                    throw e;
-                }
-            }
-            logger.info("Enum type checks/creations complete.");
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    /**
-     * Проверяет существование и создает необходимые таблицы в базе данных, если они отсутствуют.
-     * Использует блокировку для обеспечения потокобезопасности при запуске.
-     * @throws SQLException Если произошла ошибка при создании таблиц.
-     */
-    private void createTablesIfNotExist() throws SQLException {
-        lock.lock(); // Блокировка для предотвращения одновременного создания таблиц
-        try (Statement stmt = connection.createStatement()) {
-            logger.info("Checking/creating tables for schema '{}'...", schema);
-
-            // Таблица users
-            String createUsersTable = "CREATE TABLE IF NOT EXISTS " + table("users") + " (" +
-                                      "id SERIAL PRIMARY KEY," +
-                                      "name VARCHAR(255) UNIQUE NOT NULL," +
-                                      "password VARCHAR(255) NOT NULL" +
-                                      ")";
-            stmt.execute(createUsersTable);
-            logger.info("Table '{}.users' checked/created.", schema);
-
-            // Таблица Coordinates
-            String createCoordinatesTable = "CREATE TABLE IF NOT EXISTS " + table("Coordinates") + " (" +
-                                            "id SERIAL PRIMARY KEY," +
-                                            "x BIGINT NOT NULL," +
-                                            "y DOUBLE PRECISION NOT NULL" +
-                                            ")";
-            stmt.execute(createCoordinatesTable);
-            logger.info("Table '{}.Coordinates' checked/created.", schema);
-
-            // Таблица Houses
-            String createHousesTable = "CREATE TABLE IF NOT EXISTS " + table("Houses") + " (" +
-                                       "id SERIAL PRIMARY KEY," +
-                                       "name VARCHAR(255) NOT NULL," +
-                                       "year INTEGER CHECK (year > 0 AND year <= 959) NOT NULL," +
-                                       "number_of_floors BIGINT CHECK (number_of_floors > 0 AND number_of_floors <= 77) NOT NULL" +
-                                       ")";
-            stmt.execute(createHousesTable);
-            logger.info("Table '{}.Houses' checked/created.", schema);
-
-            // Таблица Flats
-            String createFlatsTable = "CREATE TABLE IF NOT EXISTS " + table("Flats") + " (" +
-                                      "id SERIAL PRIMARY KEY," +
-                                      "name VARCHAR(255) NOT NULL," +
-                                      "coordinates_id INTEGER NOT NULL REFERENCES " + table("Coordinates") + "(id) ON DELETE CASCADE," +
-                                      "creation_date DATE NOT NULL," +
-                                      "area DOUBLE PRECISION CHECK (area > 0 AND area <= 626) NOT NULL," +
-                                      "number_of_rooms INTEGER CHECK (number_of_rooms > 0) NOT NULL," +
-                                      "furnish " + schema + ".Furnish NOT NULL," + // Используем квалифицированный по схеме тип ENUM
-                                      "view " + schema + ".View," +                 // Может быть NULL
-                                      "transport " + schema + ".Transport NOT NULL," +
-                                      "house_id INTEGER REFERENCES " + table("Houses") + "(id) ON DELETE SET NULL," + // Может быть NULL
-                                      "owner_id INTEGER NOT NULL REFERENCES " + table("users") + "(id) ON DELETE CASCADE" +
-                                      ")";
-            stmt.execute(createFlatsTable);
-            logger.info("Table '{}.Flats' checked/created.", schema);
-            logger.info("All table checks/creations complete.");
-
-        } catch (SQLException e) {
-            logger.error("Error during table creation: {}", e.getMessage());
-            throw e; // Перебрасываем исключение, чтобы указать на критический сбой при инициализации
-        } finally {
-            lock.unlock();
-        }
-    }
-
 
     /**
      * Retrieves the user ID by username.
@@ -459,38 +326,10 @@ public class DatabaseManager {
                     flat.setCreationDate(LocalDate.parse(rs.getDate("creation_date").toString()));
                     flat.setArea(rs.getDouble("area")); // DECIMAL handles DOUBLE PRECISION from Java fine
                     flat.setNumberOfRooms(rs.getInt("number_of_rooms"));
-                    
-                    // Обработка ENUM Furnish
-                    String furnishStr = rs.getString("furnish");
-                    try {
-                        flat.setFurnish(Furnish.valueOf(furnishStr));
-                    } catch (IllegalArgumentException e) {
-                        logger.error("Invalid Furnish value in DB for flat ID {}: '{}'. Setting to null.", id, furnishStr);
-                        flat.setFurnish(null); // Или установите значение по умолчанию
-                    }
-
-                    // Обработка ENUM View (может быть null)
+                    flat.setFurnish(Furnish.valueOf(rs.getString("furnish")));
                     String viewStr = rs.getString("view");
-                    if (viewStr != null) {
-                        try {
-                            flat.setView(View.valueOf(viewStr));
-                        } catch (IllegalArgumentException e) {
-                            logger.error("Invalid View value in DB for flat ID {}: '{}'. Setting to null.", id, viewStr);
-                            flat.setView(null);
-                        }
-                    } else {
-                        flat.setView(null);
-                    }
-                    
-                    // Обработка ENUM Transport
-                    String transportStr = rs.getString("transport");
-                    try {
-                        flat.setTransport(Transport.valueOf(transportStr));
-                    } catch (IllegalArgumentException e) {
-                        logger.error("Invalid Transport value in DB for flat ID {}: '{}'. Setting to null.", id, transportStr);
-                        flat.setTransport(null); // Или установите значение по умолчанию
-                    }
-
+                    flat.setView(viewStr != null ? View.valueOf(viewStr) : null);
+                    flat.setTransport(Transport.valueOf(rs.getString("transport")));
 
                     // House
                     String houseName = rs.getString("house_name");
