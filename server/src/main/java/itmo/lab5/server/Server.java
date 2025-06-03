@@ -49,7 +49,7 @@ public class Server {
             dbManager = DatabaseManager.getInstance(
                 System.getProperty("DB_URL", "jdbc:postgresql://localhost:5432/studs"), 
                 System.getProperty("DB_USER", "s489388"), 
-                System.getProperty("DB_PASSWORD", "*:*:*:s489388:a9Zmtk0FSdDmw6BI"),
+                System.getProperty("DB_PASSWORD", ""),
                 System.getProperty("DB_SCHEME", "s489388")
             );
         } catch (SQLException e) {
