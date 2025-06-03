@@ -23,8 +23,14 @@ public class RemoveKeyCommand {
     public static String execute(Integer id, Collection collection, String nick) {
         if (collection == null || collection.getAllFlats().isEmpty())
             return "Collection is empty now!";
-        
-        collection.removeFlat(id, nick);
+
+        if(collection.getFlat(id) == null)
+            return "This flat even not exists!";
+
+        if(collection.getFlat(id).getOwnerName() == null ? nick == null : collection.getFlat(id).getOwnerName().equals(nick))
+            collection.removeFlat(id, nick);
+        else
+            return "Can't remove others data!";
         
         return "Element was successfuly deleted from collection!";
     }

@@ -69,36 +69,43 @@ public class App {
 
         String nick = new String("");
         String password = new String("");
+        Boolean unauthorized = true;
 
         try {
-            do {
-                System.out.print("Do you want to sign in? (y/n): ");
-                regFlag = scanner.nextLine().trim();
+            while(unauthorized) {
+                do {
+                    System.out.print("Do you want to sign in? (y/n): ");
+                    regFlag = scanner.nextLine().trim();
 
-                if ("y".equalsIgnoreCase(regFlag))
-                    authType = CommandType.SIGN_IN;
-                else if ("n".equalsIgnoreCase(regFlag))
-                    authType = CommandType.SIGN_UP;
-                else
-                    System.out.println("Invalid input. Please enter 'y' or 'n'.");
-            } while (
-                !"y".equalsIgnoreCase(regFlag) && !"n".equalsIgnoreCase(regFlag));  
+                    if ("y".equalsIgnoreCase(regFlag))
+                        authType = CommandType.SIGN_IN;
+                    else if ("n".equalsIgnoreCase(regFlag))
+                        authType = CommandType.SIGN_UP;
+                    else
+                        System.out.println("Invalid input. Please enter 'y' or 'n'.");
+                } while (
+                    !"y".equalsIgnoreCase(regFlag) && !"n".equalsIgnoreCase(regFlag));  
 
-            do {
-                System.out.print("Your nick: ");
-                nick = scanner.nextLine().trim();
+                do {
+                    System.out.print("Your nick: ");
+                    nick = scanner.nextLine().trim();
 
-                System.out.print("Your password: ");
-                password = scanner.nextLine().trim();
-            } while (nick.trim().isEmpty() || password.trim().isEmpty());
+                    System.out.print("Your password: ");
+                    password = scanner.nextLine().trim();
+                } while (nick.trim().isEmpty() || password.trim().isEmpty());
 
-            context.set("nick", nick);
-            context.set("password", password);
+                context.set("nick", nick);
+                context.set("password", password);
 
-            String result = new String();
-            if(authType.equals(CommandType.SIGN_UP))
-                result = RequestSender.getInstance().sendRequest(new DataPacket(authType, null, null));
-
+                String result = new String();
+                if(authType.equals(CommandType.SIGN_UP) || authType.equals(CommandType.SIGN_IN))
+                    result = RequestSender.getInstance().sendRequest(new DataPacket(authType, null, null));     
+                
+                if(!result.toLowerCase().contains("such user"))
+                    unauthorized = false;
+                
+                System.out.println(result);
+            }       
         } catch (NoSuchElementException e) {
             System.out.println("Input proccess was interrupted!");
         }

@@ -368,9 +368,8 @@ public class DatabaseManager {
         lock.lock();
         try {
             Integer ownerId = getUserIdByName(ownerName);
-            if (ownerId == null) {
-                return false; // User not found
-            }
+            if (ownerId == null)
+                return false;
 
             // ON DELETE CASCADE on coordinates_id handles coordinate deletion.
             // ON DELETE SET NULL on house_id handles house association.

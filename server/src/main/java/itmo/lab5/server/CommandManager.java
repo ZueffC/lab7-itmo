@@ -8,6 +8,7 @@ import itmo.lab5.server.commands.InsertCommand;
 import itmo.lab5.server.commands.RemoveKeyCommand;
 import itmo.lab5.server.commands.ReplaceCommand;
 import itmo.lab5.server.commands.ShowCommand;
+import itmo.lab5.server.commands.SignInCommand;
 import itmo.lab5.server.commands.SignUpCommand;
 import itmo.lab5.server.commands.UpdateCommand;
 import static itmo.lab5.shared.CommandType.CLEAR;
@@ -48,6 +49,7 @@ public class CommandManager {
             case REPLACE_IF_GREATER -> ReplaceCommand.execute(pack.getId(), pack.getFlat(), collection, pack.getNick());
             case REPLACE_IF_LOWER -> ReplaceCommand.execute(pack.getId() * -1, pack.getFlat(), collection, pack.getNick());
             case SIGN_UP -> SignUpCommand.execute(pack, dbManager);
+            case SIGN_IN -> SignInCommand.execute(pack, dbManager);
             default -> "There's no such command!";
         };
 

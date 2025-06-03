@@ -49,7 +49,7 @@ public class Server {
             dbManager = DatabaseManager.getInstance(
                 System.getProperty("DB_URL", "jdbc:postgresql://localhost:5432/studs"), 
                 System.getProperty("DB_USER", "s489388"), 
-                System.getProperty("DB_PASSWORD", ""),
+                System.getProperty("DB_PASSWORD", "*:*:*:s489388:a9Zmtk0FSdDmw6BI"),
                 System.getProperty("DB_SCHEME", "s489388")
             );
         } catch (SQLException e) {
@@ -136,11 +136,11 @@ public class Server {
         logger.debug("Got command: " + request.getType());
 
         try {
-            if(dbManager.userExists(request.getNick(), request.getPassword()) || request.getType() == CommandType.SIGN_UP) {
+            if(dbManager.userExists(request.getNick(), request.getPassword()) 
+                || request.getType() == CommandType.SIGN_UP || request.getType() == CommandType.SIGN_IN)
                 return CommandManager.getAppropriateCommand(request, collection, dbManager);
-            } else {
+            else
                 return "You can't interract with data without sign up!";
-            }
         } catch (SQLException ex) {
             logger.error(ex.getMessage());
             return "There's an SQL error!";
