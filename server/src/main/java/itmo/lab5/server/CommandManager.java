@@ -11,6 +11,9 @@ import itmo.lab5.server.commands.ShowCommand;
 import itmo.lab5.server.commands.SignInCommand;
 import itmo.lab5.server.commands.SignUpCommand;
 import itmo.lab5.server.commands.UpdateCommand;
+import itmo.lab5.server.commands.CheckRights;
+
+import static itmo.lab5.shared.CommandType.CHECK_EXISTENCE_AND_RIGHTS;
 import static itmo.lab5.shared.CommandType.CLEAR;
 import static itmo.lab5.shared.CommandType.FILTER_GREATER_THAN_VIEW;
 import static itmo.lab5.shared.CommandType.FILTER_LESS_THAN_VIEW;
@@ -50,6 +53,7 @@ public class CommandManager {
             case REPLACE_IF_LOWER -> ReplaceCommand.execute(pack.getId() * -1, pack.getFlat(), collection, pack.getNick());
             case SIGN_UP -> SignUpCommand.execute(pack, dbManager);
             case SIGN_IN -> SignInCommand.execute(pack, dbManager);
+            case CHECK_EXISTENCE_AND_RIGHTS -> CheckRights.execute(pack, dbManager);
             default -> "There's no such command!";
         };
 
