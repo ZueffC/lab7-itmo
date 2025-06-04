@@ -27,7 +27,7 @@ public class RemoveKeyCommand {
         if(collection.getFlat(id) == null)
             return "This flat even not exists!";
 
-        if(collection.getFlat(id).getOwnerName() == null ? nick == null : collection.getFlat(id).getOwnerName().equals(nick))
+        if(collection.getFlat(id).getOwnerName().equals(nick))
             collection.removeFlat(id, nick);
         else
             return "Can't remove others data!";

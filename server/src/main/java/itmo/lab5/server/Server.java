@@ -47,11 +47,10 @@ public class Server {
 
         try {
             dbManager = DatabaseManager.getInstance(
-                System.getProperty("DB_URL", "jdbc:postgresql://localhost:5432/studs"), 
-                System.getProperty("DB_USER", "s489388"), 
-                System.getProperty("DB_PASSWORD", ""),
-                System.getProperty("DB_SCHEME", "s489388")
-            );
+                    System.getProperty("DB_URL", "jdbc:postgresql://localhost:5432/studs"),
+                    System.getProperty("DB_USER", "s489388"),
+                    System.getProperty("DB_PASSWORD", ""),
+                    System.getProperty("DB_SCHEME", "s489388"));
         } catch (SQLException e) {
             logger.error("Can't connect to DB: " + e.toString());
             System.exit(1);
@@ -78,7 +77,7 @@ public class Server {
                     if (key.isAcceptable())
                         handleAccept(serverSocket, selector);
                     else if (key.isReadable()) {
-                        key.interestOps(key.interestOps() & ~SelectionKey.OP_READ); 
+                        key.interestOps(key.interestOps() & ~SelectionKey.OP_READ);
                         readPool.submit(() -> handleRead(key, collection));
                     } else if (key.isWritable())
                         writePool.submit(() -> handleWrite(key));
@@ -117,18 +116,19 @@ public class Server {
                 String response = processRequest(request);
                 ByteBuffer responseBuffer = ByteBuffer.wrap(response.getBytes());
 
-                synchronized (writeBuffers){
+                synchronized (writeBuffers) {
                     writeBuffers.put(client, responseBuffer);
                 }
 
                 key.interestOps(SelectionKey.OP_WRITE);
-                key.selector().wakeup(); 
+                key.selector().wakeup();
             });
 
         } catch (Exception e) {
             try {
                 client.close();
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
     }
 
@@ -136,8 +136,8 @@ public class Server {
         logger.debug("Got command: " + request.getType());
 
         try {
-            if(dbManager.userExists(request.getNick(), request.getPassword()) 
-                || request.getType() == CommandType.SIGN_UP || request.getType() == CommandType.SIGN_IN)
+            if (dbManager.userExists(request.getNick(), request.getPassword())
+                    || request.getType() == CommandType.SIGN_UP || request.getType() == CommandType.SIGN_IN)
                 return CommandManager.getAppropriateCommand(request, collection, dbManager);
             else
                 return "You can't interract with data without sign up!";
@@ -165,7 +165,8 @@ public class Server {
         } catch (IOException e) {
             try {
                 client.close();
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
     }
 }
