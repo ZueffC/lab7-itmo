@@ -20,9 +20,12 @@ public class InsertCommand {
         else
             newId = 1;
 
+        if(collection.containsFlat(newId))
+            return "Can't overwrite someone else data!";
+
         newFlat.setId(newId);
         collection.addFlat(newId, newFlat, nick);
 
-        return "Element was successfuly inserted to collection!";
+        return "Element was successfully inserted to collection!";
     }
 }
