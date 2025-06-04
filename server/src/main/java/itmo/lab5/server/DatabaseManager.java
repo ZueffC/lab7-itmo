@@ -456,13 +456,11 @@ public class DatabaseManager {
     public boolean addUser(String username, String password) throws SQLException {
         lock.lock();
         try {
-            if (usernameExists(username)) {
-                return false; // User already exists
-            }
+            if (usernameExists(username))
+                return false;
 
             String salt = generateDeterministicSalt(username);
             String hashedPassword = hashPasswordWithSalt(password, salt);
-            // Column name is 'password' in the DDL, so use that.
             String sql = "INSERT INTO " + table("users") + " (name, password) VALUES (?, ?)"; 
             
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
