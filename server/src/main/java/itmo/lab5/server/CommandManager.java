@@ -53,7 +53,7 @@ public class CommandManager {
             case REPLACE_IF_LOWER -> ReplaceCommand.execute(pack.getId() * -1, pack.getFlat(), collection, pack.getNick());
             case SIGN_UP -> SignUpCommand.execute(pack, dbManager);
             case SIGN_IN -> SignInCommand.execute(pack, dbManager);
-            case CHECK_EXISTENCE_AND_RIGHTS -> CheckRights.execute(pack, dbManager);
+            case CHECK_EXISTENCE_AND_RIGHTS -> CheckRights.execute(pack, dbManager, collection);
             default -> "There's no such command!";
         };
 

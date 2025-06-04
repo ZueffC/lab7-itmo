@@ -5,6 +5,7 @@ import itmo.lab5.client.interfaces.Command;
 import itmo.lab5.client.net.RequestSender;
 import itmo.lab5.shared.CommandType;
 import itmo.lab5.shared.DataPacket;
+import itmo.lab5.shared.models.Flat;
 
 /**
  *
@@ -15,6 +16,14 @@ public class RemoveKeyCommand implements Command {
 
     @Override
     public String execute(String[] args, CommandContext context) {
+        var tmpFlat = new Flat();
+        tmpFlat.setId(Integer.valueOf(args[0]));
+
+        var res = RequestSender.getInstance().sendRequest(
+            new DataPacket(CommandType.CHECK_EXISTENCE_AND_RIGHTS, Integer.valueOf(args[0]), tmpFlat));
+
+        System.out.println(res);
+
         return RequestSender.getInstance().sendRequest(
                 new DataPacket(CommandType.REMOVE_KEY, Integer.valueOf(args[0]), null));
     }
