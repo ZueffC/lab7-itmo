@@ -14,10 +14,10 @@ public class SignUpCommand {
             var status = dbManager.addUser(nick, password);
             if(status)
                 return "User was successfuly created";
+            else
+                return "Such user already exists!";
         } catch (SQLException e) {
             return "Can't create such user!";
         }
-
-        return "";
     }   
 }

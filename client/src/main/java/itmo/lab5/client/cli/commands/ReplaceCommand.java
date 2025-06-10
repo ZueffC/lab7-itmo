@@ -60,6 +60,14 @@ public class ReplaceCommand implements Command {
             return "You provided wrong id!";
         }
 
+        var _flat = new Flat();
+        _flat.setId(id);
+        String checkExistance = RequestSender.getInstance().sendRequest(
+                new DataPacket(CommandType.CHECK_AFFILIATION, null, _flat));
+
+        if(checkExistance.contains("false"))
+            return "Can't modificate this data!";
+
         Flat updatedFlat = null;
         if (args.length > 1) {
             updatedFlat = updateByArgs(context, args, id);

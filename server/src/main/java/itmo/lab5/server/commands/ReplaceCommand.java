@@ -20,6 +20,10 @@ public class ReplaceCommand {
         if (oldFlat == null)
             return "There's no element with ID = " + key;
 
+        // Проверка, что пользователь является владельцем
+        if (!oldFlat.getOwnerName().equals(nick))
+            return "Can't update someone else data!";
+
         boolean replaced = false;
         boolean isNegativeId = id < 0;
 

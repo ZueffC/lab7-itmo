@@ -1,7 +1,6 @@
 package itmo.lab5.server.commands;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.SQLException;
 
 import itmo.lab5.server.Collection;
 import itmo.lab5.shared.models.Flat;
@@ -12,17 +11,13 @@ import itmo.lab5.shared.models.Flat;
  */
 public class InsertCommand {
     public static String execute(Flat newFlat, Collection collection, String nick) {
-        int newId = -1;
-
-        List<Integer> keys = new ArrayList<>(collection.getAllFlats().keySet());
-        if (!keys.isEmpty())
-            newId = keys.get(keys.size() - 1) + 1;
-        else
-            newId = 1;
-
-        newFlat.setId(newId);
-        collection.addFlat(newId, newFlat, nick);
-
-        return "Element was successfuly inserted to collection!";
+        try {
+            int generatedId = collection.addFlat(newFlat, nick);
+            newFlat.setId(generatedId);
+            
+            return "Element was successfuly inserted to collection!";
+        } catch (SQLException ex) {
+            return "There was an error while trying to add data to DB";
+        }
     }
 }

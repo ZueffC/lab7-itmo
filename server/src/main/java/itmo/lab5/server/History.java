@@ -6,6 +6,8 @@ package itmo.lab5.server;
  */
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Manages the history of executed commands, maintaining a fixed size.
@@ -25,7 +27,9 @@ public class History {
     if (history.size() >= MAX_SIZE)
       history.removeFirst();
 
-    history.add(command);
+    final Set<String> excludedCommands = new HashSet<>(Set.of("CHECK_AFFILIATION", "SIGN_IN", "SIGN_UP"));
+    if (excludedCommands.stream().noneMatch(cmd -> cmd.equalsIgnoreCase(command.toUpperCase())))
+        history.add(command);
   }
 
   /**

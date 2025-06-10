@@ -58,9 +58,17 @@ public class UpdateCommand implements Command {
 
         try {
             id = Integer.parseInt(args[0]);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             return "You provided wrong id!";
         }
+
+        var _flat = new Flat();
+        _flat.setId(id);
+        String checkExistance = RequestSender.getInstance()
+            .sendRequest(new DataPacket(CommandType.CHECK_AFFILIATION, null, _flat));
+
+        if(checkExistance.contains("false"))
+            return "Can't modificate that data!";
 
         Flat updatedFlat = null;
 

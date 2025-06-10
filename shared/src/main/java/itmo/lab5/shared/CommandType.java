@@ -21,4 +21,5 @@ public enum CommandType implements Serializable {
     SERVER_SAVE,
     SIGN_UP,
     SIGN_IN,
+    CHECK_AFFILIATION
 }

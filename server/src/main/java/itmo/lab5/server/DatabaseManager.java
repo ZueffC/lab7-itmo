@@ -55,9 +55,8 @@ public class DatabaseManager {
     }
 
     private String table(String tableName) {
-        return schema + "." + tableName;
+        return  schema + "." + tableName;
     }
-
     /**
      * Retrieves the user ID by username.
      * @param username The username to look up.
@@ -135,8 +134,8 @@ public class DatabaseManager {
                 ResultSet rs = stmt.executeQuery();
                 if (rs.next()) {
                     int generatedId = rs.getInt("id");
-                    connection.commit(); // Commit transaction
-                    return generatedId;
+                    connection.commit();
+                    return generatedId; // Возвращаем ID вместо -1
                 } else {
                     connection.rollback(); // Rollback if no ID returned
                     return -1;
@@ -261,7 +260,7 @@ public class DatabaseManager {
                 int rowsAffected = stmt.executeUpdate();
                 if (rowsAffected > 0) {
                     connection.commit();
-                    return true;
+                    return stmt.executeUpdate() > 0;
                 } else {
                     connection.rollback();
                     return false;

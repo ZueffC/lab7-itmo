@@ -1,6 +1,8 @@
 package itmo.lab5.server.commands;
 
 
+import java.sql.SQLException;
+
 import itmo.lab5.server.Collection;
 import itmo.lab5.shared.models.Flat;
 
@@ -15,6 +17,9 @@ public class UpdateCommand {
         var oldFlat = collection.getOrDefault(id, null);
         if (oldFlat == null)
             return "There is not flat with such id!";
+
+        if (!newFlat.getOwnerName().equals(nick))
+            return "Can't change owner of the flat!";
         
         if(oldFlat.getOwnerName() == null ? newFlat.getOwnerName() == null : oldFlat.getOwnerName().equals(newFlat.getOwnerName())) {
             if (newFlat.getName() != null && newFlat.getName().length() > 0)
@@ -55,7 +60,11 @@ public class UpdateCommand {
                 oldFlat.getHouse().setYear(newHouse.getYear());
 
             
-            container.addFlat(oldFlat.getId(), oldFlat, nick);
+            try {
+                container.updateFlat(oldFlat.getId(), oldFlat, nick);
+            } catch (SQLException ex) {
+                return "Can't update this flat: internal error";
+            }
             return "Flat has been successfully updated!";
         } else {
             return "Can't update someone else data!";

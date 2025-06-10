@@ -49,7 +49,7 @@ public class Server {
             dbManager = DatabaseManager.getInstance(
                     System.getProperty("DB_URL", "jdbc:postgresql://localhost:5432/studs"),
                     System.getProperty("DB_USER", "s489388"),
-                    System.getProperty("DB_PASSWORD", ""),
+                    System.getProperty("DB_PASSWORD", "*:*:*:s489388:a9Zmtk0FSdDmw6BI"),
                     System.getProperty("DB_SCHEME", "s489388"));
         } catch (SQLException e) {
             logger.error("Can't connect to DB: " + e.toString());
@@ -113,15 +113,19 @@ public class Server {
             DataPacket request = (DataPacket) ois.readObject();
 
             processPool.submit(() -> {
-                String response = processRequest(request);
-                ByteBuffer responseBuffer = ByteBuffer.wrap(response.getBytes());
-
-                synchronized (writeBuffers) {
-                    writeBuffers.put(client, responseBuffer);
+                try {
+                    String response = processRequest(request);
+                    ByteBuffer responseBuffer = ByteBuffer.wrap(response.getBytes());
+                    
+                    synchronized (writeBuffers) {
+                        writeBuffers.put(client, responseBuffer);
+                    }
+                    
+                    key.interestOps(SelectionKey.OP_WRITE);
+                    key.selector().wakeup();
+                } catch (SQLException ex) {
+                    System.out.println("Can't operate with data!");
                 }
-
-                key.interestOps(SelectionKey.OP_WRITE);
-                key.selector().wakeup();
             });
 
         } catch (Exception e) {
@@ -132,15 +136,17 @@ public class Server {
         }
     }
 
-    private static String processRequest(DataPacket request) {
+    private static String processRequest(DataPacket request) throws SQLException {
         logger.debug("Got command: " + request.getType());
 
         try {
-            if (dbManager.userExists(request.getNick(), request.getPassword())
-                    || request.getType() == CommandType.SIGN_UP || request.getType() == CommandType.SIGN_IN)
+            if (request.getType() == CommandType.SIGN_UP || request.getType() == CommandType.SIGN_IN)
+                return CommandManager.getAppropriateCommand(request, collection, dbManager);
+            
+            if (dbManager.userExists(request.getNick(), request.getPassword())) 
                 return CommandManager.getAppropriateCommand(request, collection, dbManager);
             else
-                return "You can't interract with data without sign up!";
+                return "You can't interact with data without sign up!";
         } catch (SQLException ex) {
             logger.error(ex.getMessage());
             return "There's an SQL error!";

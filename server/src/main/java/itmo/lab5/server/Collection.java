@@ -13,6 +13,27 @@ public class Collection {
     private Collection(DatabaseManager dbManager) {
         Collection.db = dbManager;
     }
+ 
+    public synchronized boolean updateFlat(int id, Flat updatedFlat, String ownerName) throws SQLException {
+        if (!collection.containsKey(id))
+            return false; // Проверяем, существует ли flat
+        
+        // Обновляем поля flat
+        if (updatedFlat.getName() != null)
+            collection.get(id).setName(updatedFlat.getName());
+        
+        // Обновляем координаты
+        if (updatedFlat.getCoordinates() != null) {
+            collection.get(id).getCoordinates().setX(updatedFlat.getCoordinates().getX());
+            collection.get(id).getCoordinates().setY(updatedFlat.getCoordinates().getY());
+        }
+        
+        // Обновляем остальные поля...
+        
+        // Сохраняем изменения в БД
+        db.updateFlat(id, collection.get(id), ownerName);
+        return true;
+    }
     
     public static Collection getInstance(DatabaseManager dbManager) throws SQLException {
         if (instance == null)
@@ -30,19 +51,19 @@ public class Collection {
         return instance;
     }
     
-    public synchronized void addFlat(int id, Flat flat, String nick) {
+    public synchronized int addFlat(Flat flat, String nick) throws SQLException {
         if (flat == null)
             throw new IllegalArgumentException("Flat cannot be null");
         
-        try {
-            db.insertFlat(flat, nick);
-        } catch (SQLException e) {
-            return;
+        int generatedId = db.insertFlat(flat, nick); // Возвращает сгенерированный БД id
+        if (generatedId == -1) {
+            throw new SQLException("Failed to insert flat");
         }
-    
-        collection.put(id, flat);
+        
+        collection.put(generatedId, flat);
+        return generatedId;
     }
-    
+
     public synchronized Flat removeFlat(int id, String nick) {
         try {
             db.removeFlat(id, nick);
