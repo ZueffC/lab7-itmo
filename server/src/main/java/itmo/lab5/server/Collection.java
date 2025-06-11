@@ -88,12 +88,11 @@ public class Collection {
     
     public synchronized void clear(String nick) {
         try {
-            db.clearFlatsByOwner(nick);
-        } catch(SQLException e) {
-            return;
+            db.clearFlatsByOwner(nick); 
+            collection.entrySet().removeIf(entry -> nick.equals(entry.getValue().getOwnerName()));
+        } catch (SQLException e) {
+            
         }
-
-        collection.clear();
     }
     
     public synchronized HashMap<Integer, Flat> getAllFlats() {
